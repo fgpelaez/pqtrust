@@ -1,0 +1,21 @@
+# pqtrust daemon configuration. Every key can be overridden by an environment
+# variable; see the table in README.md.
+server:
+  listen: ":8443"
+  tls:
+    # Generate an ephemeral ECDSA P-256 certificate at startup. The key exchange
+    # is hybrid post-quantum (X25519MLKEM768) regardless of this setting.
+    auto_self_signed: true
+    hostname: "localhost"
+    # cert_file: /etc/pqtrust/tls/cert.pem
+    # key_file: /etc/pqtrust/tls/key.pem
+
+database:
+  path: "/var/lib/pqtrust/pqtrust.db"
+
+keystore:
+  dir: "/var/lib/pqtrust/keys"
+
+issuance:
+  max_validity_days: 397
+  crl_validity_hours: 168

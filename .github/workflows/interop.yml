@@ -1,0 +1,32 @@
+name: interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  openssl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - name: Install OpenSSL 3.5
+        run: |
+          set -euo pipefail
+          # Ubuntu runners ship OpenSSL 3.0/3.4 without ML-DSA; build 3.5.
+          version=3.5.7
+          curl -fsSLO "https://github.com/openssl/openssl/releases/download/openssl-${version}/openssl-${version}.tar.gz"
+          tar xzf "openssl-${version}.tar.gz"
+          cd "openssl-${version}"
+          ./Configure --prefix=/opt/openssl35 --openssldir=/opt/openssl35/ssl
+          make -j"$(nproc)"
+          sudo make install_sw
+          echo "/opt/openssl35/bin" >> "$GITHUB_PATH"
+      - name: Verify the OpenSSL version
+        run: openssl version
+      - name: Interop
+        run: ./scripts/interop.sh

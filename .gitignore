@@ -2,7 +2,7 @@
 /bin/
 /dist/
 *.exe
-pqtrustd
+/pqtrustd
 pqtrust
 
 # Test/coverage artifacts
@@ -23,3 +23,9 @@ coverage.html
 
 # Git worktrees
 /.worktrees/
+
+# Subagent-driven development scratch
+/.superpowers/
+
+# Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh
+/testdata/acvp/*.json
