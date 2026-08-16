@@ -3,6 +3,7 @@ package pqx509
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/asn1"
 	"errors"
 	"math/big"
 	"testing"
@@ -137,5 +138,143 @@ func TestParseRevocationListRejectsTrailingData(t *testing.T) {
 	der, _ := CreateRevocationList(rand.Reader, ca, signer, big.NewInt(1), nil, now, now.Add(time.Hour))
 	if _, err := ParseRevocationList(append(der, 0x00)); err == nil {
 		t.Error("trailing data must be rejected")
+	}
+}
+
+func TestParseRevocationListRejectsTBSParameters(t *testing.T) {
+	ca, signer := testCA(t, MLDSA44, 0)
+	now := time.Now().UTC().Truncate(time.Second)
+	der, _ := CreateRevocationList(rand.Reader, ca, signer, big.NewInt(1), nil, now, now.Add(time.Hour))
+
+	var outer certificateListDER
+	if _, err := asn1.Unmarshal(der, &outer); err != nil {
+		t.Fatalf("unmarshal outer: %v", err)
+	}
+	var tbs tbsCertList
+	if _, err := asn1.Unmarshal(outer.TBSCertList.FullBytes, &tbs); err != nil {
+		t.Fatalf("unmarshal TBS: %v", err)
+	}
+	tbs.SignatureAlgorithm.Parameters = asn1.RawValue{FullBytes: []byte{0x05, 0x00}}
+	newTBS, err := asn1.Marshal(tbs)
+	if err != nil {
+		t.Fatalf("re-marshal TBS: %v", err)
+	}
+	outer.TBSCertList.FullBytes = newTBS
+	crafted, err := asn1.Marshal(outer)
+	if err != nil {
+		t.Fatalf("re-marshal outer: %v", err)
+	}
+
+	if _, err := ParseRevocationList(crafted); err == nil {
+		t.Fatal("ParseRevocationList must reject a TBS signature AlgorithmIdentifier carrying parameters")
+	} else if !errors.Is(err, ErrMalformedDER) {
+		t.Errorf("err = %v, want one wrapping ErrMalformedDER", err)
+	}
+}
+
+func TestParseRevocationListRejectsSignatureUnusedBits(t *testing.T) {
+	ca, signer := testCA(t, MLDSA44, 0)
+	now := time.Now().UTC().Truncate(time.Second)
+	der, _ := CreateRevocationList(rand.Reader, ca, signer, big.NewInt(1), nil, now, now.Add(time.Hour))
+
+	var outer certificateListDER
+	if _, err := asn1.Unmarshal(der, &outer); err != nil {
+		t.Fatalf("unmarshal outer: %v", err)
+	}
+	outer.SignatureValue.BitLength = outer.SignatureValue.BitLength - 1
+	crafted, err := asn1.Marshal(outer)
+	if err != nil {
+		t.Fatalf("re-marshal outer: %v", err)
+	}
+
+	if _, err := ParseRevocationList(crafted); err == nil {
+		t.Fatal("ParseRevocationList must reject a signature BIT STRING with unused bits")
+	} else if !errors.Is(err, ErrMalformedDER) {
+		t.Errorf("err = %v, want one wrapping ErrMalformedDER", err)
+	}
+}
+
+func TestParseRevocationListRejectsSignatureWrongSize(t *testing.T) {
+	ca, signer := testCA(t, MLDSA44, 0)
+	now := time.Now().UTC().Truncate(time.Second)
+	der, _ := CreateRevocationList(rand.Reader, ca, signer, big.NewInt(1), nil, now, now.Add(time.Hour))
+
+	var outer certificateListDER
+	if _, err := asn1.Unmarshal(der, &outer); err != nil {
+		t.Fatalf("unmarshal outer: %v", err)
+	}
+	outer.SignatureValue.Bytes = outer.SignatureValue.Bytes[:len(outer.SignatureValue.Bytes)-1]
+	outer.SignatureValue.BitLength = len(outer.SignatureValue.Bytes) * 8
+	crafted, err := asn1.Marshal(outer)
+	if err != nil {
+		t.Fatalf("re-marshal outer: %v", err)
+	}
+
+	if _, err := ParseRevocationList(crafted); err == nil {
+		t.Fatal("ParseRevocationList must reject a signature of wrong length")
+	} else if !errors.Is(err, ErrMalformedDER) {
+		t.Errorf("err = %v, want one wrapping ErrMalformedDER", err)
+	}
+}
+
+func TestParseRevocationListRejectsV1WithExtensions(t *testing.T) {
+	ca, signer := testCA(t, MLDSA44, 0)
+	now := time.Now().UTC().Truncate(time.Second)
+	der, _ := CreateRevocationList(rand.Reader, ca, signer, big.NewInt(1), nil, now, now.Add(time.Hour))
+
+	var outer certificateListDER
+	if _, err := asn1.Unmarshal(der, &outer); err != nil {
+		t.Fatalf("unmarshal outer: %v", err)
+	}
+	var tbs tbsCertList
+	if _, err := asn1.Unmarshal(outer.TBSCertList.FullBytes, &tbs); err != nil {
+		t.Fatalf("unmarshal TBS: %v", err)
+	}
+	tbs.Version = 0
+	newTBS, err := asn1.Marshal(tbs)
+	if err != nil {
+		t.Fatalf("re-marshal TBS: %v", err)
+	}
+	outer.TBSCertList.FullBytes = newTBS
+	crafted, err := asn1.Marshal(outer)
+	if err != nil {
+		t.Fatalf("re-marshal outer: %v", err)
+	}
+
+	if _, err := ParseRevocationList(crafted); err == nil {
+		t.Fatal("ParseRevocationList must reject a v1 CRL that carries extensions")
+	} else if !errors.Is(err, ErrMalformedDER) {
+		t.Errorf("err = %v, want one wrapping ErrMalformedDER", err)
+	}
+}
+
+func TestParseRevocationListRejectsDuplicateExtensions(t *testing.T) {
+	ca, signer := testCA(t, MLDSA44, 0)
+	now := time.Now().UTC().Truncate(time.Second)
+	der, _ := CreateRevocationList(rand.Reader, ca, signer, big.NewInt(1), nil, now, now.Add(time.Hour))
+
+	var outer certificateListDER
+	if _, err := asn1.Unmarshal(der, &outer); err != nil {
+		t.Fatalf("unmarshal outer: %v", err)
+	}
+	var tbs tbsCertList
+	if _, err := asn1.Unmarshal(outer.TBSCertList.FullBytes, &tbs); err != nil {
+		t.Fatalf("unmarshal TBS: %v", err)
+	}
+	tbs.Extensions = append(tbs.Extensions, tbs.Extensions[0])
+	newTBS, err := asn1.Marshal(tbs)
+	if err != nil {
+		t.Fatalf("re-marshal TBS: %v", err)
+	}
+	outer.TBSCertList.FullBytes = newTBS
+	crafted, err := asn1.Marshal(outer)
+	if err != nil {
+		t.Fatalf("re-marshal outer: %v", err)
+	}
+
+	if _, err := ParseRevocationList(crafted); err == nil {
+		t.Fatal("ParseRevocationList must reject duplicate CRL extensions")
+	} else if !errors.Is(err, ErrMalformedDER) {
+		t.Errorf("err = %v, want one wrapping ErrMalformedDER", err)
 	}
 }

@@ -158,6 +158,15 @@ func ParseRevocationList(der []byte) (*RevocationList, error) {
 	if len(outer.SignatureAlgorithm.Parameters.FullBytes) != 0 {
 		return nil, fmt.Errorf("%w: CRL signature AlgorithmIdentifier must omit parameters", ErrMalformedDER)
 	}
+	if len(tbs.SignatureAlgorithm.Parameters.FullBytes) != 0 {
+		return nil, fmt.Errorf("%w: TBSCertList signature AlgorithmIdentifier must omit parameters", ErrMalformedDER)
+	}
+	if outer.SignatureValue.BitLength%8 != 0 {
+		return nil, fmt.Errorf("%w: CRL signature BIT STRING has unused bits", ErrMalformedDER)
+	}
+	if len(outer.SignatureValue.Bytes) != alg.SignatureSize() {
+		return nil, fmt.Errorf("%w: %s CRL signature is %d bytes, want %d", ErrMalformedDER, alg, len(outer.SignatureValue.Bytes), alg.SignatureSize())
+	}
 	issuer, err := ParseName(tbs.Issuer.FullBytes)
 	if err != nil {
 		return nil, err
@@ -180,7 +189,19 @@ func ParseRevocationList(der []byte) (*RevocationList, error) {
 			return nil, err
 		}
 	}
+	// A v1 CRL that carries extensions is a known protocol violation: RFC 5280
+	// 5.1.2.1 requires v2 whenever extensions are present. We treat this as a
+	// hard error wrapping ErrMalformedDER — the input is not valid DER for the
+	// strict profile pqtrust verifies.
+	if tbs.Version != 1 && len(tbs.Extensions) > 0 {
+		return nil, fmt.Errorf("%w: CRL version v%d carries extensions, want v2", ErrMalformedDER, tbs.Version+1)
+	}
+	seen := map[string]bool{}
 	for _, e := range tbs.Extensions {
+		if seen[e.ID.String()] {
+			return nil, fmt.Errorf("%w: duplicate CRL extension %s", ErrMalformedDER, e.ID)
+		}
+		seen[e.ID.String()] = true
 		switch {
 		case e.ID.Equal(oidExtAuthorityKeyID):
 			if l.AuthorityKeyID, err = parseAuthorityKeyID(e.Value); err != nil {
