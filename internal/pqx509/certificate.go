@@ -267,6 +267,9 @@ func ParseCertificate(der []byte) (*Certificate, error) {
 	if !tbs.SignatureAlgorithm.Algorithm.Equal(outer.SignatureAlgorithm.Algorithm) {
 		return nil, fmt.Errorf("%w: inner and outer signature algorithms differ", ErrMalformedDER)
 	}
+	if len(tbs.SignatureAlgorithm.Parameters.FullBytes) != 0 {
+		return nil, fmt.Errorf("%w: TBSCertificate signature AlgorithmIdentifier must omit parameters", ErrMalformedDER)
+	}
 	if outer.SignatureValue.BitLength%8 != 0 {
 		return nil, fmt.Errorf("%w: signature BIT STRING has unused bits", ErrMalformedDER)
 	}

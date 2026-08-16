@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/asn1"
+	"errors"
 	"math/big"
 	"net"
 	"testing"
@@ -272,5 +273,41 @@ func TestValidityTimesSurviveRoundTrip(t *testing.T) {
 	}
 	if !reparsed.NotBefore.Equal(ca.NotBefore) || !reparsed.NotAfter.Equal(ca.NotAfter) {
 		t.Errorf("validity mismatch: %v/%v vs %v/%v", reparsed.NotBefore, reparsed.NotAfter, ca.NotBefore, ca.NotAfter)
+	}
+}
+
+func TestParseCertificateRejectsTBSAlgorithmIdentifierParameters(t *testing.T) {
+	ca, _ := testCA(t, MLDSA44, 0)
+
+	var outer certificateDER
+	if _, err := asn1.Unmarshal(ca.Raw, &outer); err != nil {
+		t.Fatalf("unmarshal outer: %v", err)
+	}
+	var tbs tbsCertificate
+	if _, err := asn1.Unmarshal(outer.TBSCertificate.FullBytes, &tbs); err != nil {
+		t.Fatalf("unmarshal TBS: %v", err)
+	}
+	if len(tbs.SignatureAlgorithm.Parameters.FullBytes) != 0 {
+		t.Fatalf("baseline TLS cert must have absent parameters, got %x", tbs.SignatureAlgorithm.Parameters.FullBytes)
+	}
+
+	tbs.SignatureAlgorithm.Parameters = asn1.RawValue{FullBytes: []byte{0x05, 0x00}}
+	newTBS, err := asn1.Marshal(tbs)
+	if err != nil {
+		t.Fatalf("re-marshal TBS: %v", err)
+	}
+
+	outer.TBSCertificate.FullBytes = newTBS
+	crafted, err := asn1.Marshal(outer)
+	if err != nil {
+		t.Fatalf("re-marshal outer: %v", err)
+	}
+
+	_, err = ParseCertificate(crafted)
+	if err == nil {
+		t.Fatal("ParseCertificate must reject a TBS signature AlgorithmIdentifier carrying parameters")
+	}
+	if !errors.Is(err, ErrMalformedDER) {
+		t.Errorf("err = %v, want one wrapping ErrMalformedDER", err)
 	}
 }
