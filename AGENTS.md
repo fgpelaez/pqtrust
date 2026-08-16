@@ -2,12 +2,7 @@
 
 ## Where the code actually is
 
-This checkout (`main`) contains **only design docs**. All Go code lives in the git worktree:
-
-- **`.worktrees/pqtrust-phase1/`** — branch `feat/phase1`, ~22 commits ahead of `main`, fully implemented and green (`go test ./...` passes).
-- `.worktrees/` is gitignored, so worktree work is not committed from here — commit/push from inside the worktree (it is a normal checkout of `feat/phase1`).
-
-Do not expect `internal/`, `cmd/`, `go.mod` etc. at the repo root. Work inside the worktree unless the task is writing docs.
+Everything lives on `main` in this checkout: the design docs and the full Go implementation (`internal/`, `cmd/`, `go.mod`). The Phase 1 work was merged in from the `feat/phase1` branch.
 
 ## Sources of truth
 
