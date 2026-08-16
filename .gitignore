@@ -23,3 +23,6 @@ coverage.html
 
 # Git worktrees
 /.worktrees/
+
+# Subagent-driven development scratch
+/.superpowers/
