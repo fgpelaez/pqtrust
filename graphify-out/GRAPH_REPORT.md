@@ -1,83 +1,152 @@
 # Graph Report - pqtrust  (2026-08-16)
 
 ## Corpus Check
-- 66 files · ~69,834 words
-- Verdict: corpus is large enough that graph structure adds value.
+- cluster-only mode — file stats not available
 
 ## Summary
-- 53 nodes · 50 edges · 7 communities
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
+- 494 nodes · 1245 edges · 25 communities (21 shown, 4 thin omitted)
+- Extraction: 80% EXTRACTED · 20% INFERRED · 0% AMBIGUOUS · INFERRED: 243 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c2dd7d79`
+- Built from commit: `2ea0a512`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
+- context.Context
+- testCA
+- extensions.go
+- testing.T
+- net/http.ResponseWriter
+- encoding/asn1.RawValue
+- newApp
+- CreateRevocationList
 - pqtrust — Post-Quantum PKI-as-a-Service
+- Seal
+- time.Time
+- Algorithm
+- newHarness
 - 2026-08-16-pqtrust-phase1.md
-- File Structure
-- 5. Cryptographic design
-- 6. pqx509 package specification
+- Load
 - AGENTS.md
-- 2. Goals and non-goals
+- fetch-acvp.sh
+- interop.sh
+- Store
+- github.com/fernando/pqtrust
 
 ## God Nodes (most connected - your core abstractions)
-1. `pqtrust — Post-Quantum PKI-as-a-Service` - 14 edges
-2. `File Structure` - 7 edges
-3. `5. Cryptographic design` - 5 edges
-4. `6. pqx509 package specification` - 4 edges
-5. `Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh` - 3 edges
-6. `pqtrust Phase 1 Implementation Plan` - 3 edges
-7. `2. Goals and non-goals` - 3 edges
-8. `11. Deployment, licensing & commercialization path` - 2 edges
-9. `Where the code actually is` - 1 edges
-10. `Sources of truth` - 1 edges
+1. `testCA()` - 34 edges
+2. `GenerateKey()` - 30 edges
+3. `ParseCertificate()` - 28 edges
+4. `Algorithm` - 28 edges
+5. `CreateRevocationList()` - 26 edges
+6. `ParseRevocationList()` - 20 edges
+7. `CreateCertificate()` - 19 edges
+8. `GenerateSerialNumber()` - 18 edges
+9. `Certificate` - 18 edges
+10. `Engine` - 17 edges
 
 ## Surprising Connections (you probably didn't know these)
-- None detected - all connections are within the same source files.
+- `runTokenCreate()` --calls--> `NewKeyID()`  [EXTRACTED]
+  cmd/pqtrustd/token.go → internal/keystore/keystore.go
+- `main()` --calls--> `ParseCertificate()`  [EXTRACTED]
+  scripts/parsecert/main.go → internal/pqx509/certificate.go
+- `runTokenCreate()` --calls--> `GenerateToken()`  [EXTRACTED]
+  cmd/pqtrustd/token.go → internal/api/auth.go
+- `runTokenCreate()` --calls--> `HashToken()`  [EXTRACTED]
+  cmd/pqtrustd/token.go → internal/api/auth.go
+- `app` --references--> `Config`  [EXTRACTED]
+  cmd/pqtrustd/serve.go → internal/config/config.go
 
-## Communities (7 total, 0 thin omitted)
+## Import Cycles
+- None detected.
 
-### Community 0 - "pqtrust — Post-Quantum PKI-as-a-Service"
-Cohesion: 0.15
-Nodes (12): 10. Testing strategy, 11.1 Open-core boundary (future, not built now), 11. Deployment, licensing & commercialization path, 12. Phasing, 13. Success criteria, 1. Overview, 3. Technology choices, 4. Architecture (+4 more)
+## Communities (25 total, 4 thin omitted)
 
-### Community 1 - "2026-08-16-pqtrust-phase1.md"
+### Community 0 - "context.Context"
+Cohesion: 0.09
+Nodes (27): IssueRequest, IssueResult, Options, context.Context, sync.Mutex, time.Duration, Engine, EncodePrivateKeyPEM() (+19 more)
+
+### Community 1 - "testCA"
+Cohesion: 0.11
+Nodes (43): io.Reader, CreateCertificate(), GenerateSerialNumber(), ParseCertificate(), Certificate, testCA(), TestCreateCertificateValidation(), TestCreateEndEntityUnderCA() (+35 more)
+
+### Community 2 - "extensions.go"
+Cohesion: 0.08
+Nodes (39): net.IP, buildExtensions(), Certificate, Extension, ExtKeyUsage, KeyUsage, SANs, isSupportedExtension() (+31 more)
+
+### Community 3 - "testing.T"
+Cohesion: 0.13
+Nodes (36): Engine, testing.T, TestCRLEmptyThenRevoked(), TestCRLIsCachedUntilRevocationChanges(), TestCRLUnknownCA(), New(), createIntermediate(), createRoot() (+28 more)
+
+### Community 4 - "net/http.ResponseWriter"
+Cohesion: 0.14
+Nodes (21): caResponse, createCARequest, problem, subjectJSON, net/http.Request, net/http.ResponseWriter, Server, toCAResponse() (+13 more)
+
+### Community 5 - "encoding/asn1.RawValue"
+Cohesion: 0.13
+Nodes (25): CreateCARequest, encoding/asn1.BitString, encoding/asn1.ObjectIdentifier, encoding/asn1.RawValue, extension, Name, isPrintableString(), marshalDirectoryString() (+17 more)
+
+### Community 6 - "newApp"
+Cohesion: 0.10
+Nodes (23): main(), run(), TestSelfSignedTLSCert(), TestTokenCreateThenServeAndAuthenticate(), usage(), selfSignedTLSCert(), newApp(), serve() (+15 more)
+
+### Community 7 - "CreateRevocationList"
+Cohesion: 0.14
+Nodes (22): math/big.Int, CreateRevocationList(), Certificate, ParseRevocationList(), TestCreateParseCRLRoundTrip(), TestEmptyCRLIsValid(), TestIsRevoked(), TestParseRevocationListRejectsDuplicateExtensions() (+14 more)
+
+### Community 8 - "pqtrust — Post-Quantum PKI-as-a-Service"
+Cohesion: 0.08
+Nodes (24): 10. Testing strategy, 11.1 Open-core boundary (future, not built now), 11. Deployment, licensing & commercialization path, 12. Phasing, 13. Success criteria, 1. Overview, 2. Goals and non-goals, 3. Technology choices (+16 more)
+
+### Community 9 - "Seal"
+Cohesion: 0.18
+Nodes (16): crypto/cipher.AEAD, validateKeyID(), aad(), newGCM(), Seal(), TestSealRejectsEmptyPassphrase(), TestSealUnsealRoundTrip(), TestSealUsesDistinctSaltAndNonce() (+8 more)
+
+### Community 10 - "time.Time"
 Cohesion: 0.17
-Nodes (11): ACVP test vectors, certificate chain issued by pqtrust. Run locally or from CI., Downloads the NIST ACVP ML-DSA sigVer vectors used by internal/pqx509/acvp_test.go., Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh, ... paste and run every command from the README demo ..., pqtrust daemon configuration. Every key can be overridden by an environment, Proves third-party interoperability: OpenSSL 3.5+ must parse and verify a, Split the returned chain into leaf, intermediate and root PEM files. (+3 more)
+Nodes (16): certificateResponse, issueRequest, issueResponse, revokeRequest, crlCacheEntry, time.Time, marshalTime(), parseTime() (+8 more)
 
-### Community 2 - "File Structure"
-Cohesion: 0.22
-Nodes (9): File Structure, Global Constraints, pqtrust Phase 1 Implementation Plan, Task 0: Toolchain and repository bootstrap, Task 1: pqx509 algorithms, keys and SPKI encoding, Task 2: Distinguished names and RFC 5280 time encoding, Task 3: Certificate extensions, Task 4: CreateCertificate and ParseCertificate (+1 more)
+### Community 11 - "Algorithm"
+Cohesion: 0.11
+Nodes (14): caProfile, checkEndEntityAlgorithm(), checkExtKeyUsage(), loadJSON(), pubFromSK(), sigSize(), TestACVPMLDSASigGen(), TestACVPMLDSASigVer() (+6 more)
 
-### Community 3 - "5. Cryptographic design"
-Cohesion: 0.40
-Nodes (5): 5.1 Algorithms and OIDs, 5.2 Hierarchy and constraints, 5.3 Key storage, 5.4 Transport, 5. Cryptographic design
+### Community 12 - "newHarness"
+Cohesion: 0.21
+Nodes (15): harness, net/http.Handler, net/http/httptest.ResponseRecorder, decode(), newHarness(), TestAuthFailures(), TestErrorMapping(), TestFullIssuanceAndRevocationFlow() (+7 more)
 
-### Community 4 - "6. pqx509 package specification"
-Cohesion: 0.50
-Nodes (4): 6.1 Surface (Phase 1), 6.2 Supported extensions, 6.3 Path validation scope, 6. pqx509 package specification
+### Community 13 - "2026-08-16-pqtrust-phase1.md"
+Cohesion: 0.10
+Nodes (20): ACVP test vectors, certificate chain issued by pqtrust. Run locally or from CI., Downloads the NIST ACVP ML-DSA sigVer vectors used by internal/pqx509/acvp_test.go., File Structure, Global Constraints, Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh, ... paste and run every command from the README demo ..., pqtrust daemon configuration. Every key can be overridden by an environment (+12 more)
 
-### Community 5 - "AGENTS.md"
-Cohesion: 0.29
+### Community 14 - "Load"
+Cohesion: 0.20
+Nodes (15): DatabaseConfig, IssuanceConfig, KeystoreConfig, ServerConfig, TLSConfig, Default(), Config, Load() (+7 more)
+
+### Community 15 - "AGENTS.md"
+Cohesion: 0.33
 Nodes (5): Architecture, Commands (run in the worktree), Crypto / X.509 conventions (hard rules, enforced in tests), Sources of truth, Where the code actually is
 
-### Community 6 - "2. Goals and non-goals"
-Cohesion: 0.67
-Nodes (3): 2. Goals and non-goals, Goals, Non-goals (YAGNI)
-
 ## Knowledge Gaps
-- **41 isolated node(s):** `Where the code actually is`, `Sources of truth`, `Commands (run in the worktree)`, `Architecture`, `Crypto / X.509 conventions (hard rules, enforced in tests)` (+36 more)
+- **54 isolated node(s):** `revokeRequest`, `acvpSigGenExpected`, `acvpSigGenPrompt`, `acvpSigVerExpected`, `acvpSigVerPrompt` (+49 more)
   These have ≤1 connection - possible missing edges or undocumented components.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `pqtrust — Post-Quantum PKI-as-a-Service` connect `pqtrust — Post-Quantum PKI-as-a-Service` to `5. Cryptographic design`, `6. pqx509 package specification`, `2. Goals and non-goals`?**
-  _High betweenness centrality (0.193) - this node is a cross-community bridge._
-- **Why does `pqtrust Phase 1 Implementation Plan` connect `File Structure` to `2026-08-16-pqtrust-phase1.md`?**
-  _High betweenness centrality (0.078) - this node is a cross-community bridge._
-- **What connects `Where the code actually is`, `Sources of truth`, `Commands (run in the worktree)` to the rest of the system?**
-  _41 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `Algorithm` connect `Algorithm` to `context.Context`, `testCA`, `extensions.go`, `net/http.ResponseWriter`, `encoding/asn1.RawValue`, `CreateRevocationList`, `Seal`?**
+  _High betweenness centrality (0.076) - this node is a cross-community bridge._
+- **Why does `CreateRevocationList()` connect `CreateRevocationList` to `context.Context`, `testCA`, `extensions.go`, `time.Time`, `Algorithm`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Why does `ParseCertificate()` connect `testCA` to `context.Context`, `extensions.go`, `net/http.ResponseWriter`, `encoding/asn1.RawValue`, `CreateRevocationList`, `time.Time`, `newHarness`?**
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+- **Are the 21 inferred relationships involving `testCA()` (e.g. with `CreateCertificate()` and `GenerateSerialNumber()`) actually correct?**
+  _`testCA()` has 21 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 16 inferred relationships involving `GenerateKey()` (e.g. with `testCA()` and `TestCreateCertificateValidation()`) actually correct?**
+  _`GenerateKey()` has 16 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 21 inferred relationships involving `ParseCertificate()` (e.g. with `algorithmFromOID()` and `parseAuthorityKeyID()`) actually correct?**
+  _`ParseCertificate()` has 21 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `revokeRequest`, `acvpSigGenExpected`, `acvpSigGenPrompt` to the rest of the system?**
+  _54 weakly-connected nodes found - possible documentation gaps or missing edges._
