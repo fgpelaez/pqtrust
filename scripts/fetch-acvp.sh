@@ -15,5 +15,7 @@ fetch() {
 
 fetch "ML-DSA-sigVer-FIPS204" "prompt.json" "mldsa-sigver-prompt.json"
 fetch "ML-DSA-sigVer-FIPS204" "expectedResults.json" "mldsa-sigver-expected.json"
+fetch "ML-DSA-sigGen-FIPS204" "prompt.json" "mldsa-siggen-prompt.json"
+fetch "ML-DSA-sigGen-FIPS204" "expectedResults.json" "mldsa-siggen-expected.json"
 
 echo "done; vectors in ${dest}"
