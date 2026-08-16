@@ -26,3 +26,6 @@ coverage.html
 
 # Subagent-driven development scratch
 /.superpowers/
+
+# Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh
+/testdata/acvp/*.json
