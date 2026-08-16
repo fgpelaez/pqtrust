@@ -20,3 +20,6 @@ coverage.html
 .vscode/
 .idea/
 .DS_Store
+
+# Git worktrees
+/.worktrees/
