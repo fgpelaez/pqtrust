@@ -76,6 +76,80 @@ func TestEmptyCRLIsValid(t *testing.T) {
 	}
 }
 
+func TestCRLVerifySignatureFromRejects(t *testing.T) {
+	ca, signer := testCA(t, MLDSA44, 0)
+	now := time.Now().UTC().Truncate(time.Second)
+	der, err := CreateRevocationList(rand.Reader, ca, signer, big.NewInt(1), nil, now, now.Add(24*time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	crl, err := ParseRevocationList(der)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("nil issuer", func(t *testing.T) {
+		if err := crl.VerifySignatureFrom(nil); err == nil {
+			t.Error("nil issuer must be rejected")
+		}
+	})
+
+	t.Run("issuer DN mismatch", func(t *testing.T) {
+		pub, priv, err := GenerateKey(rand.Reader, MLDSA44)
+		if err != nil {
+			t.Fatal(err)
+		}
+		signer, err := priv.Signer()
+		if err != nil {
+			t.Fatal(err)
+		}
+		serial, err := GenerateSerialNumber(rand.Reader)
+		if err != nil {
+			t.Fatal(err)
+		}
+		other, err := CreateCertificate(rand.Reader, &Certificate{
+			SerialNumber:          serial,
+			SignatureAlgorithm:    MLDSA44,
+			Subject:               Name{CommonName: "a-different-ca"},
+			NotBefore:             now,
+			NotAfter:              now.Add(24 * time.Hour),
+			BasicConstraints:      BasicConstraints{IsCA: true, MaxPathLen: 0, MaxPathLenSet: true},
+			BasicConstraintsValid: true,
+			KeyUsage:              KeyUsageKeyCertSign | KeyUsageCRLSign,
+		}, &Certificate{
+			SignatureAlgorithm: MLDSA44,
+			Subject:            Name{CommonName: "a-different-ca"},
+			NotBefore:          now,
+			NotAfter:           now.Add(24 * time.Hour),
+		}, pub, signer)
+		if err != nil {
+			t.Fatal(err)
+		}
+		otherCert, err := ParseCertificate(other)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := crl.VerifySignatureFrom(otherCert); !errors.Is(err, ErrUnknownAuthority) {
+			t.Errorf("want ErrUnknownAuthority, got %v", err)
+		}
+	})
+
+	t.Run("algorithm mismatch", func(t *testing.T) {
+		wrongAlg, wrongSigner := testCA(t, MLDSA65, 0)
+		der, err := CreateRevocationList(rand.Reader, wrongAlg, wrongSigner, big.NewInt(1), nil, now, now.Add(24*time.Hour))
+		if err != nil {
+			t.Fatal(err)
+		}
+		crl, err := ParseRevocationList(der)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := crl.VerifySignatureFrom(ca); !errors.Is(err, ErrBadSignature) {
+			t.Errorf("want ErrBadSignature, got %v", err)
+		}
+	})
+}
+
 func TestIsRevoked(t *testing.T) {
 	ca, signer := testCA(t, MLDSA44, 0)
 	now := time.Now().UTC().Truncate(time.Second)

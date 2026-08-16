@@ -1,7 +1,7 @@
 GO ?= go
 export CGO_ENABLED = 0
 
-.PHONY: build test cover lint vuln tidy
+.PHONY: build test race cover lint vuln tidy
 
 build:
 	$(GO) build -trimpath -o bin/pqtrustd ./cmd/pqtrustd

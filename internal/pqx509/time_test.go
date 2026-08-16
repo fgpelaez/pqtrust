@@ -1,6 +1,8 @@
 package pqx509
 
 import (
+	"encoding/asn1"
+	"errors"
 	"testing"
 	"time"
 )
@@ -31,6 +33,30 @@ func TestMarshalTimeChoosesEncodingByYear(t *testing.T) {
 			t.Errorf("round-trip = %v, want %v", back, c.in)
 		}
 	}
+}
+
+func TestParseTimeRejectsBadTagAndBadContent(t *testing.T) {
+	t.Run("unknown tag", func(t *testing.T) {
+		if _, err := parseTime(asn1.RawValue{Tag: 5, FullBytes: []byte{0x05, 0x00}}); !errors.Is(err, ErrMalformedDER) {
+			t.Errorf("want ErrMalformedDER, got %v", err)
+		}
+	})
+	t.Run("malformed UTC content", func(t *testing.T) {
+		// A UTCTime whose body is not valid ASCII digits.
+		if _, err := parseTime(asn1.RawValue{Tag: tagUTCTime, FullBytes: []byte{0x17, 0x0d, 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'Z'}}); !errors.Is(err, ErrMalformedDER) {
+			t.Errorf("want ErrMalformedDER, got %v", err)
+		}
+	})
+	t.Run("trailing bytes", func(t *testing.T) {
+		rv, err := marshalTime(time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC))
+		if err != nil {
+			t.Fatal(err)
+		}
+		rv.FullBytes = append(rv.FullBytes, 0x00)
+		if _, err := parseTime(rv); !errors.Is(err, ErrTrailingData) {
+			t.Errorf("want ErrTrailingData, got %v", err)
+		}
+	})
 }
 
 func TestMarshalTimeTruncatesSubSecondAndNormalizesZone(t *testing.T) {
