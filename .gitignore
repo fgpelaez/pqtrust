@@ -1,0 +1,22 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+pqtrustd
+pqtrust
+
+# Test/coverage artifacts
+*.out
+*.coverprofile
+coverage.html
+
+# Local config & secrets
+/config.local.yaml
+*.key
+*.pem
+!.gitkeep
+
+# Editor/OS noise
+.vscode/
+.idea/
+.DS_Store
