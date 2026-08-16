@@ -9,10 +9,10 @@
       "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design",
       "community": 0,
       "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "2026-08-16-pqtrust-design.md"
+      "norm_label": "2026-08-16-pqtrust-design.md",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design"
     },
     {
       "label": "10. Testing strategy",
@@ -20,472 +20,10 @@
       "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
       "source_location": "L223",
       "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_10_testing_strategy",
       "community": 0,
       "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "10. testing strategy"
-    },
-    {
-      "label": "12. Phasing",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L258",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_12_phasing",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "12. phasing"
-    },
-    {
-      "label": "13. Success criteria",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L266",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_13_success_criteria",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "13. success criteria"
-    },
-    {
-      "label": "1. Overview",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_1_overview",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "1. overview"
-    },
-    {
-      "label": "3. Technology choices",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L46",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_3_technology_choices",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "3. technology choices"
-    },
-    {
-      "label": "4. Architecture",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L58",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_4_architecture",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "4. architecture"
-    },
-    {
-      "label": "7. REST API",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L173",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_7_rest_api",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "7. rest api"
-    },
-    {
-      "label": "8. Data model (SQLite)",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L199",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_8_data_model_sqlite",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "8. data model (sqlite)"
-    },
-    {
-      "label": "9. Error handling",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L214",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_9_error_handling",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "9. error handling"
-    },
-    {
-      "label": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "community": 0,
-      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
-      "norm_label": "pqtrust \u2014 post-quantum pki-as-a-service"
-    },
-    {
-      "label": "2026-08-16-pqtrust-phase1.md",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "2026-08-16-pqtrust-phase1.md"
-    },
-    {
-      "label": "ACVP test vectors",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L3847",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_acvp_test_vectors",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "acvp test vectors"
-    },
-    {
-      "label": "certificate chain issued by pqtrust. Run locally or from CI.",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L8881",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_certificate_chain_issued_by_pqtrust_run_locally_or_from_ci",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "certificate chain issued by pqtrust. run locally or from ci."
-    },
-    {
-      "label": "Downloads the NIST ACVP ML-DSA sigVer vectors used by internal/pqx509/acvp_test.go.",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L3814",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_downloads_the_nist_acvp_ml_dsa_sigver_vectors_used_by_internal_pqx509_acvp_test_go",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "downloads the nist acvp ml-dsa sigver vectors used by internal/pqx509/acvp_test.go."
-    },
-    {
-      "label": "... paste and run every command from the README demo ...",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L9304",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_paste_and_run_every_command_from_the_readme_demo",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "... paste and run every command from the readme demo ..."
-    },
-    {
-      "label": "pqtrust daemon configuration. Every key can be overridden by an environment",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L9184",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_daemon_configuration_every_key_can_be_overridden_by_an_environment",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "pqtrust daemon configuration. every key can be overridden by an environment"
-    },
-    {
-      "label": "Proves third-party interoperability: OpenSSL 3.5+ must parse and verify a",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L8880",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_proves_third_party_interoperability_openssl_3_5_must_parse_and_verify_a",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "proves third-party interoperability: openssl 3.5+ must parse and verify a"
-    },
-    {
-      "label": "Split the returned chain into leaf, intermediate and root PEM files.",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L8953",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_split_the_returned_chain_into_leaf_intermediate_and_root_pem_files",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "split the returned chain into leaf, intermediate and root pem files."
-    },
-    {
-      "label": "variable; see the table in README.md.",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L9185",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_variable_see_the_table_in_readme_md",
-      "community": 1,
-      "community_name": "2026-08-16-pqtrust-phase1.md",
-      "norm_label": "variable; see the table in readme.md."
-    },
-    {
-      "label": "File Structure",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L33",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "file structure"
-    },
-    {
-      "label": "Global Constraints",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L13",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_global_constraints",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "global constraints"
-    },
-    {
-      "label": "pqtrust Phase 1 Implementation Plan",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_phase_1_implementation_plan",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "pqtrust phase 1 implementation plan"
-    },
-    {
-      "label": "Task 0: Toolchain and repository bootstrap",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L80",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_0_toolchain_and_repository_bootstrap",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "task 0: toolchain and repository bootstrap"
-    },
-    {
-      "label": "Task 1: pqx509 algorithms, keys and SPKI encoding",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L219",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_1_pqx509_algorithms_keys_and_spki_encoding",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "task 1: pqx509 algorithms, keys and spki encoding"
-    },
-    {
-      "label": "Task 2: Distinguished names and RFC 5280 time encoding",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L798",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_2_distinguished_names_and_rfc_5280_time_encoding",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "task 2: distinguished names and rfc 5280 time encoding"
-    },
-    {
-      "label": "Task 3: Certificate extensions",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L1236",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_3_certificate_extensions",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "task 3: certificate extensions"
-    },
-    {
-      "label": "Task 4: CreateCertificate and ParseCertificate",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L1882",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_4_createcertificate_and_parsecertificate",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "task 4: createcertificate and parsecertificate"
-    },
-    {
-      "label": "Task 6: Certificate revocation lists",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L3309",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_6_certificate_revocation_lists",
-      "community": 2,
-      "community_name": "File Structure",
-      "norm_label": "task 6: certificate revocation lists"
-    },
-    {
-      "label": "5.1 Algorithms and OIDs",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L89",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_1_algorithms_and_oids",
-      "community": 3,
-      "community_name": "5. Cryptographic design",
-      "norm_label": "5.1 algorithms and oids"
-    },
-    {
-      "label": "5.2 Hierarchy and constraints",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L106",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_2_hierarchy_and_constraints",
-      "community": 3,
-      "community_name": "5. Cryptographic design",
-      "norm_label": "5.2 hierarchy and constraints"
-    },
-    {
-      "label": "5.3 Key storage",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L118",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_3_key_storage",
-      "community": 3,
-      "community_name": "5. Cryptographic design",
-      "norm_label": "5.3 key storage"
-    },
-    {
-      "label": "5.4 Transport",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L126",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_4_transport",
-      "community": 3,
-      "community_name": "5. Cryptographic design",
-      "norm_label": "5.4 transport"
-    },
-    {
-      "label": "5. Cryptographic design",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L87",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_cryptographic_design",
-      "community": 3,
-      "community_name": "5. Cryptographic design",
-      "norm_label": "5. cryptographic design"
-    },
-    {
-      "label": "6.1 Surface (Phase 1)",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L136",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_1_surface_phase_1",
-      "community": 4,
-      "community_name": "6. pqx509 package specification",
-      "norm_label": "6.1 surface (phase 1)"
-    },
-    {
-      "label": "6.2 Supported extensions",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L159",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_2_supported_extensions",
-      "community": 4,
-      "community_name": "6. pqx509 package specification",
-      "norm_label": "6.2 supported extensions"
-    },
-    {
-      "label": "6.3 Path validation scope",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L166",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_3_path_validation_scope",
-      "community": 4,
-      "community_name": "6. pqx509 package specification",
-      "norm_label": "6.3 path validation scope"
-    },
-    {
-      "label": "6. pqx509 package specification",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L134",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_pqx509_package_specification",
-      "community": 4,
-      "community_name": "6. pqx509 package specification",
-      "norm_label": "6. pqx509 package specification"
-    },
-    {
-      "label": "Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L4026",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_large_third_party_acvp_vectors_refetch_with_scripts_fetch_acvp_sh",
-      "community": 5,
-      "community_name": "Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh",
-      "norm_label": "large third-party acvp vectors; refetch with ./scripts/fetch-acvp.sh"
-    },
-    {
-      "label": "Task 11: ca \u2014 issuance profiles, hierarchy and CRL",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L5895",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_11_ca_issuance_profiles_hierarchy_and_crl",
-      "community": 5,
-      "community_name": "Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh",
-      "norm_label": "task 11: ca \u2014 issuance profiles, hierarchy and crl"
-    },
-    {
-      "label": "Task 9: store \u2014 SQLite persistence",
-      "file_type": "document",
-      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
-      "source_location": "L4711",
-      "_origin": "ast",
-      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_9_store_sqlite_persistence",
-      "community": 5,
-      "community_name": "Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh",
-      "norm_label": "task 9: store \u2014 sqlite persistence"
-    },
-    {
-      "label": "2. Goals and non-goals",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L25",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_2_goals_and_non_goals",
-      "community": 6,
-      "community_name": "2. Goals and non-goals",
-      "norm_label": "2. goals and non-goals"
-    },
-    {
-      "label": "Goals",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L27",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_goals",
-      "community": 6,
-      "community_name": "2. Goals and non-goals",
-      "norm_label": "goals"
-    },
-    {
-      "label": "Non-goals (YAGNI)",
-      "file_type": "document",
-      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
-      "source_location": "L37",
-      "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_non_goals_yagni",
-      "community": 6,
-      "community_name": "2. Goals and non-goals",
-      "norm_label": "non-goals (yagni)"
+      "norm_label": "10. testing strategy",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_10_testing_strategy"
     },
     {
       "label": "11.1 Open-core boundary (future, not built now)",
@@ -493,10 +31,10 @@
       "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
       "source_location": "L246",
       "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_1_open_core_boundary_future_not_built_now",
-      "community": 7,
-      "community_name": "11. Deployment, licensing & commercialization path",
-      "norm_label": "11.1 open-core boundary (future, not built now)"
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "11.1 open-core boundary (future, not built now)",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_1_open_core_boundary_future_not_built_now"
     },
     {
       "label": "11. Deployment, licensing & commercialization path",
@@ -504,13 +42,618 @@
       "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
       "source_location": "L234",
       "_origin": "ast",
-      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_deployment_licensing_commercialization_path",
-      "community": 7,
-      "community_name": "11. Deployment, licensing & commercialization path",
-      "norm_label": "11. deployment, licensing & commercialization path"
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "11. deployment, licensing & commercialization path",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_deployment_licensing_commercialization_path"
+    },
+    {
+      "label": "12. Phasing",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L258",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "12. phasing",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_12_phasing"
+    },
+    {
+      "label": "13. Success criteria",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L266",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "13. success criteria",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_13_success_criteria"
+    },
+    {
+      "label": "1. Overview",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "1. overview",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_1_overview"
+    },
+    {
+      "label": "3. Technology choices",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L46",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "3. technology choices",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_3_technology_choices"
+    },
+    {
+      "label": "4. Architecture",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L58",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "4. architecture",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_4_architecture"
+    },
+    {
+      "label": "7. REST API",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L173",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "7. rest api",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_7_rest_api"
+    },
+    {
+      "label": "8. Data model (SQLite)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L199",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "8. data model (sqlite)",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_8_data_model_sqlite"
+    },
+    {
+      "label": "9. Error handling",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L214",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "9. error handling",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_9_error_handling"
+    },
+    {
+      "label": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "pqtrust \u2014 Post-Quantum PKI-as-a-Service",
+      "norm_label": "pqtrust \u2014 post-quantum pki-as-a-service",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service"
+    },
+    {
+      "label": "2026-08-16-pqtrust-phase1.md",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "2026-08-16-pqtrust-phase1.md",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1"
+    },
+    {
+      "label": "ACVP test vectors",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L3847",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "acvp test vectors",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_acvp_test_vectors"
+    },
+    {
+      "label": "certificate chain issued by pqtrust. Run locally or from CI.",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L8881",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "certificate chain issued by pqtrust. run locally or from ci.",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_certificate_chain_issued_by_pqtrust_run_locally_or_from_ci"
+    },
+    {
+      "label": "Downloads the NIST ACVP ML-DSA sigVer vectors used by internal/pqx509/acvp_test.go.",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L3814",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "downloads the nist acvp ml-dsa sigver vectors used by internal/pqx509/acvp_test.go.",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_downloads_the_nist_acvp_ml_dsa_sigver_vectors_used_by_internal_pqx509_acvp_test_go"
+    },
+    {
+      "label": "Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L4026",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "large third-party acvp vectors; refetch with ./scripts/fetch-acvp.sh",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_large_third_party_acvp_vectors_refetch_with_scripts_fetch_acvp_sh"
+    },
+    {
+      "label": "... paste and run every command from the README demo ...",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L9304",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "... paste and run every command from the readme demo ...",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_paste_and_run_every_command_from_the_readme_demo"
+    },
+    {
+      "label": "pqtrust daemon configuration. Every key can be overridden by an environment",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L9184",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "pqtrust daemon configuration. every key can be overridden by an environment",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_daemon_configuration_every_key_can_be_overridden_by_an_environment"
+    },
+    {
+      "label": "Proves third-party interoperability: OpenSSL 3.5+ must parse and verify a",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L8880",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "proves third-party interoperability: openssl 3.5+ must parse and verify a",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_proves_third_party_interoperability_openssl_3_5_must_parse_and_verify_a"
+    },
+    {
+      "label": "Split the returned chain into leaf, intermediate and root PEM files.",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L8953",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "split the returned chain into leaf, intermediate and root pem files.",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_split_the_returned_chain_into_leaf_intermediate_and_root_pem_files"
+    },
+    {
+      "label": "Task 11: ca \u2014 issuance profiles, hierarchy and CRL",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L5895",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "task 11: ca \u2014 issuance profiles, hierarchy and crl",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_11_ca_issuance_profiles_hierarchy_and_crl"
+    },
+    {
+      "label": "Task 9: store \u2014 SQLite persistence",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L4711",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "task 9: store \u2014 sqlite persistence",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_9_store_sqlite_persistence"
+    },
+    {
+      "label": "variable; see the table in README.md.",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L9185",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "2026-08-16-pqtrust-phase1.md",
+      "norm_label": "variable; see the table in readme.md.",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_variable_see_the_table_in_readme_md"
+    },
+    {
+      "label": "File Structure",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L33",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "file structure",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure"
+    },
+    {
+      "label": "Global Constraints",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L13",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "global constraints",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_global_constraints"
+    },
+    {
+      "label": "pqtrust Phase 1 Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "pqtrust phase 1 implementation plan",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_phase_1_implementation_plan"
+    },
+    {
+      "label": "Task 0: Toolchain and repository bootstrap",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L80",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "task 0: toolchain and repository bootstrap",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_0_toolchain_and_repository_bootstrap"
+    },
+    {
+      "label": "Task 1: pqx509 algorithms, keys and SPKI encoding",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L219",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "task 1: pqx509 algorithms, keys and spki encoding",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_1_pqx509_algorithms_keys_and_spki_encoding"
+    },
+    {
+      "label": "Task 2: Distinguished names and RFC 5280 time encoding",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L798",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "task 2: distinguished names and rfc 5280 time encoding",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_2_distinguished_names_and_rfc_5280_time_encoding"
+    },
+    {
+      "label": "Task 3: Certificate extensions",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L1236",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "task 3: certificate extensions",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_3_certificate_extensions"
+    },
+    {
+      "label": "Task 4: CreateCertificate and ParseCertificate",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L1882",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "task 4: createcertificate and parsecertificate",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_4_createcertificate_and_parsecertificate"
+    },
+    {
+      "label": "Task 6: Certificate revocation lists",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": "L3309",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "File Structure",
+      "norm_label": "task 6: certificate revocation lists",
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_6_certificate_revocation_lists"
+    },
+    {
+      "label": "5.1 Algorithms and OIDs",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L89",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "5. Cryptographic design",
+      "norm_label": "5.1 algorithms and oids",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_1_algorithms_and_oids"
+    },
+    {
+      "label": "5.2 Hierarchy and constraints",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L106",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "5. Cryptographic design",
+      "norm_label": "5.2 hierarchy and constraints",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_2_hierarchy_and_constraints"
+    },
+    {
+      "label": "5.3 Key storage",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L118",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "5. Cryptographic design",
+      "norm_label": "5.3 key storage",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_3_key_storage"
+    },
+    {
+      "label": "5.4 Transport",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L126",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "5. Cryptographic design",
+      "norm_label": "5.4 transport",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_4_transport"
+    },
+    {
+      "label": "5. Cryptographic design",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L87",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "5. Cryptographic design",
+      "norm_label": "5. cryptographic design",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_cryptographic_design"
+    },
+    {
+      "label": "6.1 Surface (Phase 1)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L136",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "6. pqx509 package specification",
+      "norm_label": "6.1 surface (phase 1)",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_1_surface_phase_1"
+    },
+    {
+      "label": "6.2 Supported extensions",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L159",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "6. pqx509 package specification",
+      "norm_label": "6.2 supported extensions",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_2_supported_extensions"
+    },
+    {
+      "label": "6.3 Path validation scope",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L166",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "6. pqx509 package specification",
+      "norm_label": "6.3 path validation scope",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_3_path_validation_scope"
+    },
+    {
+      "label": "6. pqx509 package specification",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L134",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "6. pqx509 package specification",
+      "norm_label": "6. pqx509 package specification",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_pqx509_package_specification"
+    },
+    {
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "agents",
+      "community": 5,
+      "community_name": "AGENTS.md",
+      "norm_label": "agents.md"
+    },
+    {
+      "label": "AGENTS.md",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "agents_agents_md",
+      "community": 5,
+      "community_name": "AGENTS.md",
+      "norm_label": "agents.md"
+    },
+    {
+      "label": "Architecture",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "agents_architecture",
+      "community": 5,
+      "community_name": "AGENTS.md",
+      "norm_label": "architecture"
+    },
+    {
+      "label": "Commands (run in the worktree)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "agents_commands_run_in_the_worktree",
+      "community": 5,
+      "community_name": "AGENTS.md",
+      "norm_label": "commands (run in the worktree)"
+    },
+    {
+      "label": "Crypto / X.509 conventions (hard rules, enforced in tests)",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "agents_crypto_x_509_conventions_hard_rules_enforced_in_tests",
+      "community": 5,
+      "community_name": "AGENTS.md",
+      "norm_label": "crypto / x.509 conventions (hard rules, enforced in tests)"
+    },
+    {
+      "label": "Sources of truth",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "agents_sources_of_truth",
+      "community": 5,
+      "community_name": "AGENTS.md",
+      "norm_label": "sources of truth"
+    },
+    {
+      "label": "Where the code actually is",
+      "file_type": "document",
+      "source_file": "AGENTS.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "agents_where_the_code_actually_is",
+      "community": 5,
+      "community_name": "AGENTS.md",
+      "norm_label": "where the code actually is"
+    },
+    {
+      "label": "2. Goals and non-goals",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L25",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "2. Goals and non-goals",
+      "norm_label": "2. goals and non-goals",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_2_goals_and_non_goals"
+    },
+    {
+      "label": "Goals",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L27",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "2. Goals and non-goals",
+      "norm_label": "goals",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_goals"
+    },
+    {
+      "label": "Non-goals (YAGNI)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": "L37",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "2. Goals and non-goals",
+      "norm_label": "non-goals (yagni)",
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_non_goals_yagni"
     }
   ],
   "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "agents",
+      "target": "agents_agents_md",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "agents_agents_md",
+      "target": "agents_sources_of_truth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "agents_agents_md",
+      "target": "agents_commands_run_in_the_worktree",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "agents_agents_md",
+      "target": "agents_where_the_code_actually_is",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "agents_agents_md",
+      "target": "agents_architecture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "AGENTS.md",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "agents_agents_md",
+      "target": "agents_crypto_x_509_conventions_hard_rules_enforced_in_tests",
+      "confidence_score": 1.0
+    },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -518,9 +661,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_phase_1_implementation_plan",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_phase_1_implementation_plan"
     },
     {
       "relation": "contains",
@@ -529,9 +672,9 @@
       "source_location": "L3814",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_downloads_the_nist_acvp_ml_dsa_sigver_vectors_used_by_internal_pqx509_acvp_test_go",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_downloads_the_nist_acvp_ml_dsa_sigver_vectors_used_by_internal_pqx509_acvp_test_go"
     },
     {
       "relation": "contains",
@@ -540,9 +683,9 @@
       "source_location": "L3847",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_acvp_test_vectors",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_acvp_test_vectors"
     },
     {
       "relation": "contains",
@@ -551,9 +694,9 @@
       "source_location": "L4026",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_large_third_party_acvp_vectors_refetch_with_scripts_fetch_acvp_sh",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_large_third_party_acvp_vectors_refetch_with_scripts_fetch_acvp_sh"
     },
     {
       "relation": "contains",
@@ -562,9 +705,9 @@
       "source_location": "L8880",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_proves_third_party_interoperability_openssl_3_5_must_parse_and_verify_a",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_proves_third_party_interoperability_openssl_3_5_must_parse_and_verify_a"
     },
     {
       "relation": "contains",
@@ -573,9 +716,9 @@
       "source_location": "L8881",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_certificate_chain_issued_by_pqtrust_run_locally_or_from_ci",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_certificate_chain_issued_by_pqtrust_run_locally_or_from_ci"
     },
     {
       "relation": "contains",
@@ -584,9 +727,9 @@
       "source_location": "L8953",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_split_the_returned_chain_into_leaf_intermediate_and_root_pem_files",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_split_the_returned_chain_into_leaf_intermediate_and_root_pem_files"
     },
     {
       "relation": "contains",
@@ -595,9 +738,9 @@
       "source_location": "L9184",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_daemon_configuration_every_key_can_be_overridden_by_an_environment",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_daemon_configuration_every_key_can_be_overridden_by_an_environment"
     },
     {
       "relation": "contains",
@@ -606,9 +749,9 @@
       "source_location": "L9185",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_variable_see_the_table_in_readme_md",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_variable_see_the_table_in_readme_md"
     },
     {
       "relation": "contains",
@@ -617,9 +760,9 @@
       "source_location": "L9304",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_paste_and_run_every_command_from_the_readme_demo",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_paste_and_run_every_command_from_the_readme_demo"
     },
     {
       "relation": "contains",
@@ -628,9 +771,9 @@
       "source_location": "L1236",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_3_certificate_extensions",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_3_certificate_extensions"
     },
     {
       "relation": "contains",
@@ -639,9 +782,9 @@
       "source_location": "L1882",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_4_createcertificate_and_parsecertificate",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_4_createcertificate_and_parsecertificate"
     },
     {
       "relation": "contains",
@@ -650,9 +793,9 @@
       "source_location": "L219",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_1_pqx509_algorithms_keys_and_spki_encoding",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_1_pqx509_algorithms_keys_and_spki_encoding"
     },
     {
       "relation": "contains",
@@ -661,9 +804,9 @@
       "source_location": "L3309",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_6_certificate_revocation_lists",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_6_certificate_revocation_lists"
     },
     {
       "relation": "contains",
@@ -672,9 +815,9 @@
       "source_location": "L798",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_2_distinguished_names_and_rfc_5280_time_encoding",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_2_distinguished_names_and_rfc_5280_time_encoding"
     },
     {
       "relation": "contains",
@@ -683,9 +826,9 @@
       "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_0_toolchain_and_repository_bootstrap",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_0_toolchain_and_repository_bootstrap"
     },
     {
       "relation": "contains",
@@ -694,9 +837,9 @@
       "source_location": "L4711",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_large_third_party_acvp_vectors_refetch_with_scripts_fetch_acvp_sh",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_9_store_sqlite_persistence",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_9_store_sqlite_persistence"
     },
     {
       "relation": "contains",
@@ -705,9 +848,9 @@
       "source_location": "L5895",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_large_third_party_acvp_vectors_refetch_with_scripts_fetch_acvp_sh",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_11_ca_issuance_profiles_hierarchy_and_crl",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_task_11_ca_issuance_profiles_hierarchy_and_crl"
     },
     {
       "relation": "contains",
@@ -716,9 +859,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_phase_1_implementation_plan",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_global_constraints",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_global_constraints"
     },
     {
       "relation": "contains",
@@ -727,9 +870,9 @@
       "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_phase_1_implementation_plan",
-      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_file_structure"
     },
     {
       "relation": "contains",
@@ -738,9 +881,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service"
     },
     {
       "relation": "contains",
@@ -749,9 +892,9 @@
       "source_location": "L246",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_deployment_licensing_commercialization_path",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_1_open_core_boundary_future_not_built_now",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_1_open_core_boundary_future_not_built_now"
     },
     {
       "relation": "contains",
@@ -760,9 +903,9 @@
       "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_2_goals_and_non_goals",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_goals",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_goals"
     },
     {
       "relation": "contains",
@@ -771,9 +914,9 @@
       "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_2_goals_and_non_goals",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_non_goals_yagni",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_non_goals_yagni"
     },
     {
       "relation": "contains",
@@ -782,9 +925,9 @@
       "source_location": "L106",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_cryptographic_design",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_2_hierarchy_and_constraints",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_2_hierarchy_and_constraints"
     },
     {
       "relation": "contains",
@@ -793,9 +936,9 @@
       "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_cryptographic_design",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_3_key_storage",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_3_key_storage"
     },
     {
       "relation": "contains",
@@ -804,9 +947,9 @@
       "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_cryptographic_design",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_4_transport",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_4_transport"
     },
     {
       "relation": "contains",
@@ -815,9 +958,9 @@
       "source_location": "L89",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_cryptographic_design",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_1_algorithms_and_oids",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_1_algorithms_and_oids"
     },
     {
       "relation": "contains",
@@ -826,9 +969,9 @@
       "source_location": "L136",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_pqx509_package_specification",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_1_surface_phase_1",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_1_surface_phase_1"
     },
     {
       "relation": "contains",
@@ -837,9 +980,9 @@
       "source_location": "L159",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_pqx509_package_specification",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_2_supported_extensions",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_2_supported_extensions"
     },
     {
       "relation": "contains",
@@ -848,9 +991,9 @@
       "source_location": "L166",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_pqx509_package_specification",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_3_path_validation_scope",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_3_path_validation_scope"
     },
     {
       "relation": "contains",
@@ -859,9 +1002,9 @@
       "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_1_overview",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_1_overview"
     },
     {
       "relation": "contains",
@@ -870,9 +1013,9 @@
       "source_location": "L134",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_pqx509_package_specification",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_6_pqx509_package_specification"
     },
     {
       "relation": "contains",
@@ -881,9 +1024,9 @@
       "source_location": "L173",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_7_rest_api",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_7_rest_api"
     },
     {
       "relation": "contains",
@@ -892,9 +1035,9 @@
       "source_location": "L199",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_8_data_model_sqlite",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_8_data_model_sqlite"
     },
     {
       "relation": "contains",
@@ -903,9 +1046,9 @@
       "source_location": "L214",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_9_error_handling",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_9_error_handling"
     },
     {
       "relation": "contains",
@@ -914,9 +1057,9 @@
       "source_location": "L223",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_10_testing_strategy",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_10_testing_strategy"
     },
     {
       "relation": "contains",
@@ -925,9 +1068,9 @@
       "source_location": "L234",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_deployment_licensing_commercialization_path",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_11_deployment_licensing_commercialization_path"
     },
     {
       "relation": "contains",
@@ -936,9 +1079,9 @@
       "source_location": "L25",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_2_goals_and_non_goals",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_2_goals_and_non_goals"
     },
     {
       "relation": "contains",
@@ -947,9 +1090,9 @@
       "source_location": "L258",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_12_phasing",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_12_phasing"
     },
     {
       "relation": "contains",
@@ -958,9 +1101,9 @@
       "source_location": "L266",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_13_success_criteria",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_13_success_criteria"
     },
     {
       "relation": "contains",
@@ -969,9 +1112,9 @@
       "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_3_technology_choices",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_3_technology_choices"
     },
     {
       "relation": "contains",
@@ -980,9 +1123,9 @@
       "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_4_architecture",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_4_architecture"
     },
     {
       "relation": "contains",
@@ -991,11 +1134,11 @@
       "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_pqtrust_post_quantum_pki_as_a_service",
-      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_cryptographic_design",
-      "confidence_score": 1.0
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_5_cryptographic_design"
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "0f939a34d550d3ba75742c6615573899955676ad"
+  "built_at_commit": "110501a24f1102a89fb6d09bcd610c528c7986c5"
 }

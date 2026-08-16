@@ -1,16 +1,16 @@
 # Graph Report - pqtrust  (2026-08-16)
 
 ## Corpus Check
-- 2 files · ~37,496 words
+- 3 files · ~37,961 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 46 nodes · 44 edges · 8 communities (7 shown, 1 thin omitted)
+- 53 nodes · 50 edges · 7 communities
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0f939a34`
+- Built from commit: `110501a2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -20,9 +20,8 @@
 - File Structure
 - 5. Cryptographic design
 - 6. pqx509 package specification
-- Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh
+- AGENTS.md
 - 2. Goals and non-goals
-- 11. Deployment, licensing & commercialization path
 
 ## God Nodes (most connected - your core abstractions)
 1. `pqtrust — Post-Quantum PKI-as-a-Service` - 14 edges
@@ -33,21 +32,21 @@
 6. `Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh` - 3 edges
 7. `2. Goals and non-goals` - 3 edges
 8. `11. Deployment, licensing & commercialization path` - 2 edges
-9. `Global Constraints` - 1 edges
-10. `Task 0: Toolchain and repository bootstrap` - 1 edges
+9. `Where the code actually is` - 1 edges
+10. `Sources of truth` - 1 edges
 
 ## Surprising Connections (you probably didn't know these)
 - None detected - all connections are within the same source files.
 
-## Communities (8 total, 1 thin omitted)
+## Communities (7 total, 0 thin omitted)
 
 ### Community 0 - "pqtrust — Post-Quantum PKI-as-a-Service"
-Cohesion: 0.18
-Nodes (10): 10. Testing strategy, 12. Phasing, 13. Success criteria, 1. Overview, 3. Technology choices, 4. Architecture, 7. REST API, 8. Data model (SQLite) (+2 more)
+Cohesion: 0.15
+Nodes (12): 10. Testing strategy, 11.1 Open-core boundary (future, not built now), 11. Deployment, licensing & commercialization path, 12. Phasing, 13. Success criteria, 1. Overview, 3. Technology choices, 4. Architecture (+4 more)
 
 ### Community 1 - "2026-08-16-pqtrust-phase1.md"
-Cohesion: 0.22
-Nodes (8): ACVP test vectors, certificate chain issued by pqtrust. Run locally or from CI., Downloads the NIST ACVP ML-DSA sigVer vectors used by internal/pqx509/acvp_test.go., ... paste and run every command from the README demo ..., pqtrust daemon configuration. Every key can be overridden by an environment, Proves third-party interoperability: OpenSSL 3.5+ must parse and verify a, Split the returned chain into leaf, intermediate and root PEM files., variable; see the table in README.md.
+Cohesion: 0.17
+Nodes (11): ACVP test vectors, certificate chain issued by pqtrust. Run locally or from CI., Downloads the NIST ACVP ML-DSA sigVer vectors used by internal/pqx509/acvp_test.go., Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh, ... paste and run every command from the README demo ..., pqtrust daemon configuration. Every key can be overridden by an environment, Proves third-party interoperability: OpenSSL 3.5+ must parse and verify a, Split the returned chain into leaf, intermediate and root PEM files. (+3 more)
 
 ### Community 2 - "File Structure"
 Cohesion: 0.22
@@ -61,25 +60,24 @@ Nodes (5): 5.1 Algorithms and OIDs, 5.2 Hierarchy and constraints, 5.3 Key stora
 Cohesion: 0.50
 Nodes (4): 6.1 Surface (Phase 1), 6.2 Supported extensions, 6.3 Path validation scope, 6. pqx509 package specification
 
-### Community 5 - "Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh"
-Cohesion: 0.67
-Nodes (3): Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh, Task 11: ca — issuance profiles, hierarchy and CRL, Task 9: store — SQLite persistence
+### Community 5 - "AGENTS.md"
+Cohesion: 0.29
+Nodes (5): Architecture, Commands (run in the worktree), Crypto / X.509 conventions (hard rules, enforced in tests), Sources of truth, Where the code actually is
 
 ### Community 6 - "2. Goals and non-goals"
 Cohesion: 0.67
 Nodes (3): 2. Goals and non-goals, Goals, Non-goals (YAGNI)
 
 ## Knowledge Gaps
-- **36 isolated node(s):** `Global Constraints`, `Task 0: Toolchain and repository bootstrap`, `Task 1: pqx509 algorithms, keys and SPKI encoding`, `Task 2: Distinguished names and RFC 5280 time encoding`, `Task 3: Certificate extensions` (+31 more)
+- **41 isolated node(s):** `Where the code actually is`, `Sources of truth`, `Commands (run in the worktree)`, `Architecture`, `Crypto / X.509 conventions (hard rules, enforced in tests)` (+36 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `pqtrust — Post-Quantum PKI-as-a-Service` connect `pqtrust — Post-Quantum PKI-as-a-Service` to `5. Cryptographic design`, `6. pqx509 package specification`, `2. Goals and non-goals`, `11. Deployment, licensing & commercialization path`?**
-  _High betweenness centrality (0.259) - this node is a cross-community bridge._
+- **Why does `pqtrust — Post-Quantum PKI-as-a-Service` connect `pqtrust — Post-Quantum PKI-as-a-Service` to `5. Cryptographic design`, `6. pqx509 package specification`, `2. Goals and non-goals`?**
+  _High betweenness centrality (0.193) - this node is a cross-community bridge._
 - **Why does `pqtrust Phase 1 Implementation Plan` connect `File Structure` to `2026-08-16-pqtrust-phase1.md`?**
-  _High betweenness centrality (0.104) - this node is a cross-community bridge._
-- **What connects `Global Constraints`, `Task 0: Toolchain and repository bootstrap`, `Task 1: pqx509 algorithms, keys and SPKI encoding` to the rest of the system?**
-  _36 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _High betweenness centrality (0.078) - this node is a cross-community bridge._
+- **What connects `Where the code actually is`, `Sources of truth`, `Commands (run in the worktree)` to the rest of the system?**
+  _41 weakly-connected nodes found - possible documentation gaps or missing edges._

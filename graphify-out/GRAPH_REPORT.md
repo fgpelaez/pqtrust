@@ -1,7 +1,7 @@
 # Graph Report - pqtrust  (2026-08-16)
 
 ## Corpus Check
-- 3 files · ~37,961 words
+- 66 files · ~69,834 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `110501a2`
+- Built from commit: `c2dd7d79`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -28,8 +28,8 @@
 2. `File Structure` - 7 edges
 3. `5. Cryptographic design` - 5 edges
 4. `6. pqx509 package specification` - 4 edges
-5. `pqtrust Phase 1 Implementation Plan` - 3 edges
-6. `Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh` - 3 edges
+5. `Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh` - 3 edges
+6. `pqtrust Phase 1 Implementation Plan` - 3 edges
 7. `2. Goals and non-goals` - 3 edges
 8. `11. Deployment, licensing & commercialization path` - 2 edges
 9. `Where the code actually is` - 1 edges

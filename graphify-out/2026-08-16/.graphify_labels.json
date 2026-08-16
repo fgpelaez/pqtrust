@@ -4,7 +4,6 @@
   "2": "File Structure",
   "3": "5. Cryptographic design",
   "4": "6. pqx509 package specification",
-  "5": "Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh",
-  "6": "2. Goals and non-goals",
-  "7": "11. Deployment, licensing & commercialization path"
+  "5": "AGENTS.md",
+  "6": "2. Goals and non-goals"
 }
