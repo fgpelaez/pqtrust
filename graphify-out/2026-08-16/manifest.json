@@ -1,20 +1,14 @@
 {
   "docs/superpowers/plans/2026-08-16-pqtrust-phase1.md": {
     "mtime": 1786902574.7553217,
-    "seen": 1786915394.1137192,
+    "seen": 1786915017.0710309,
     "ast_hash": "026fe8831c3ec12f5b623bbf82575817",
     "semantic_hash": ""
   },
   "docs/superpowers/specs/2026-08-16-pqtrust-design.md": {
     "mtime": 1786899567.6878512,
-    "seen": 1786915394.113721,
+    "seen": 1786915017.071034,
     "ast_hash": "82c14f53ca6f63939dba3178be52598f",
-    "semantic_hash": ""
-  },
-  "AGENTS.md": {
-    "mtime": 1786915171.0812652,
-    "seen": 1786915394.1137164,
-    "ast_hash": "15e5fbe923b4275665b53c4c09662ee8",
     "semantic_hash": ""
   }
 }
