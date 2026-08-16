@@ -118,6 +118,22 @@ func TestExtKeyUsageRoundTrip(t *testing.T) {
 	}
 }
 
+func TestExtKeyUsageString(t *testing.T) {
+	cases := []struct {
+		eku  ExtKeyUsage
+		want string
+	}{
+		{ExtKeyUsageServerAuth, "serverAuth"},
+		{ExtKeyUsageClientAuth, "clientAuth"},
+		{ExtKeyUsage(0), "ExtKeyUsage(0)"},
+	}
+	for _, c := range cases {
+		if got := c.eku.String(); got != c.want {
+			t.Errorf("String() = %q, want %q", got, c.want)
+		}
+	}
+}
+
 func TestKeyIDExtensionsRoundTrip(t *testing.T) {
 	id := []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
 	skidDER, err := marshalKeyID(id)

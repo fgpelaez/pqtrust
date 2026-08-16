@@ -52,3 +52,11 @@ func TestUnknownAlgorithm(t *testing.T) {
 		t.Error("algorithmFromOID should reject non-ML-DSA OIDs")
 	}
 }
+
+func TestAlgorithmSeedSizeIs32(t *testing.T) {
+	for _, alg := range []Algorithm{MLDSA44, MLDSA65, MLDSA87} {
+		if got := alg.SeedSize(); got != 32 {
+			t.Errorf("%s.SeedSize() = %d, want 32", alg, got)
+		}
+	}
+}

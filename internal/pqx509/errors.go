@@ -18,4 +18,18 @@ var (
 	ErrUnsupportedCriticalExtension = errors.New("pqx509: unsupported critical extension")
 	// ErrInvalidKeySize reports key material whose length does not match its algorithm.
 	ErrInvalidKeySize = errors.New("pqx509: invalid key size")
+	// ErrExpired reports a certificate whose NotAfter has passed.
+	ErrExpired = errors.New("pqx509: certificate has expired")
+	// ErrNotYetValid reports a certificate whose NotBefore is in the future.
+	ErrNotYetValid = errors.New("pqx509: certificate is not yet valid")
+	// ErrUnknownAuthority reports that no chain to a configured root was found.
+	ErrUnknownAuthority = errors.New("pqx509: unknown certificate authority")
+	// ErrNotACA reports an issuer without basicConstraints cA=TRUE.
+	ErrNotACA = errors.New("pqx509: issuer is not a CA")
+	// ErrPathLenExceeded reports a chain longer than a pathLenConstraint allows.
+	ErrPathLenExceeded = errors.New("pqx509: pathLenConstraint exceeded")
+	// ErrKeyUsageNotPermitted reports an issuer lacking keyCertSign.
+	ErrKeyUsageNotPermitted = errors.New("pqx509: key usage does not permit this operation")
+	// ErrRevoked reports a certificate rejected by a revocation check.
+	ErrRevoked = errors.New("pqx509: certificate has been revoked")
 )
