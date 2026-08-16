@@ -2,7 +2,7 @@
 /bin/
 /dist/
 *.exe
-pqtrustd
+/pqtrustd
 pqtrust
 
 # Test/coverage artifacts
