@@ -44,3 +44,25 @@ type certificateDER struct {
 	SignatureAlgorithm algorithmIdentifier
 	SignatureValue     asn1.BitString
 }
+
+type revokedCertificateDER struct {
+	SerialNumber   *big.Int
+	RevocationDate asn1.RawValue
+	Extensions     []extension `asn1:"optional"`
+}
+
+type tbsCertList struct {
+	Version             int // v2 == 1
+	SignatureAlgorithm  algorithmIdentifier
+	Issuer              asn1.RawValue
+	ThisUpdate          asn1.RawValue
+	NextUpdate          asn1.RawValue           `asn1:"optional"`
+	RevokedCertificates []revokedCertificateDER `asn1:"optional"`
+	Extensions          []extension             `asn1:"optional,explicit,tag:0"`
+}
+
+type certificateListDER struct {
+	TBSCertList        asn1.RawValue
+	SignatureAlgorithm algorithmIdentifier
+	SignatureValue     asn1.BitString
+}
