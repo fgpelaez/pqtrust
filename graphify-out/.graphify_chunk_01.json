@@ -1,0 +1,1181 @@
+{
+  "nodes": [
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_spec",
+      "label": "pqtrust design spec (2026-08-16)",
+      "file_type": "document",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Dual goal: a professional portfolio piece demonstrating PQC engineering depth (X.509 internals, FIPS 204/205, service design) and a foundation that can be commercialized later as an open-core product."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_plan",
+      "label": "pqtrust Phase 1 implementation plan",
+      "file_type": "document",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Bottom-up build of six independent internal packages, each depending only on packages below it and tested in isolation, proven correct by NIST ACVP vectors and an OpenSSL 3.5 interop job."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "label": "pqx509 (pure DER X.509 layer)",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Go's crypto/x509 rejects unknown PQC signature algorithm OIDs, so a from-scratch DER build/parse/verify layer on encoding/asn1 is required; it deliberately does no I/O and holds no state so every higher package can depend on it."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_keystore",
+      "label": "keystore (sealed private key storage)",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Private keys are sealed with AES-256-GCM under a wrapping key derived from the passphrase via Argon2id; the Backend interface keeps an HSM/PKCS#11 path open."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_store",
+      "label": "store (SQLite persistence)",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "SQLite via modernc.org/sqlite is pure Go and embedded (zero ops); the schema deliberately holds no pqx509 types so a future multi-tenant schema can be introduced here alone."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_config",
+      "label": "config (YAML + environment)",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "yaml.v3 decoder with KnownFields(true) turns a typo'd config key into a hard error instead of silently ignoring it."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+      "label": "ca (CA engine: profiles, hierarchy, revocation, CRL)",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+      "label": "api (REST handlers, bearer auth, RFC 7807)",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrustd",
+      "label": "cmd/pqtrustd (CA daemon binary)",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_cli",
+      "label": "cmd/pqtrust (CLI client, Phase 2)",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_certificate",
+      "label": "pqx509.Certificate type",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_createcertificate",
+      "label": "pqx509.CreateCertificate",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_signer",
+      "label": "pqx509.Signer interface",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_backend",
+      "label": "keystore.Backend interface",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Load returns a Signer rather than key material, so a future HSM or PKCS#11 implementation can satisfy the same interface without exposing key bytes."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_filebackend",
+      "label": "keystore.FileBackend",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_engine",
+      "label": "ca.Engine",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_server",
+      "label": "api.Server",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_cryptox509",
+      "label": "Go crypto/x509",
+      "file_type": "code",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa44",
+      "label": "ML-DSA-44 (OID 2.16.840.1.101.3.4.3.17)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa65",
+      "label": "ML-DSA-65 (OID 2.16.840.1.101.3.4.3.18)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa87",
+      "label": "ML-DSA-87 (OID 2.16.840.1.101.3.4.3.19)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_fips204",
+      "label": "FIPS 204 (ML-DSA)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_fips203",
+      "label": "FIPS 203 (ML-KEM)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_fips205",
+      "label": "FIPS 205 (SLH-DSA)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_slhdsa",
+      "label": "SLH-DSA (Phase 2, OIDs 2.16.840.1.101.3.4.3.20-31)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_rfc5280",
+      "label": "RFC 5280 (X.509 PKI and CRL)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_rfc7093",
+      "label": "RFC 7093 (key identifier methods)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_rfc7807",
+      "label": "RFC 7807 (problem+json)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_dilithium_draft",
+      "label": "draft-ietf-lamps-dilithium-certificates",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_composite_draft",
+      "label": "draft-ietf-lamps-pq-composite-sigs",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_acvp",
+      "label": "NIST ACVP ML-DSA vectors",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Third-party NIST ACVP vectors (never hand-written) prove pqtrust's ML-DSA usage matches FIPS 204; the test skips, not fails, when vectors are absent."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_openssl35",
+      "label": "OpenSSL 3.5 (interop verifier)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "OpenSSL 3.5 is the first release with ML-DSA support; third-party verification of a pqtrust-issued chain is the headline success criterion."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_circl",
+      "label": "github.com/cloudflare/circl",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_modernc_sqlite",
+      "label": "modernc.org/sqlite (pure-Go driver)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_argon2id",
+      "label": "Argon2id KDF (t=3, m=64MiB, p=2)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_aesgcm",
+      "label": "AES-256-GCM (sealing cipher)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_go124",
+      "label": "Go 1.24",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "crypto/mlkem and the default X25519MLKEM768 hybrid TLS curve preference require Go 1.24+."
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_x25519mlkem768",
+      "label": "X25519MLKEM768 hybrid key exchange",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The hybrid X25519MLKEM768 key exchange defeats harvest-now-decrypt-later; the API's own server certificate stays classical ECDSA P-256 because Go's crypto/tls cannot parse ML-DSA certificates yet."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_phase1",
+      "label": "Phase 1 scope (ML-DSA core)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_phase2",
+      "label": "Phase 2 scope (CSR, SLH-DSA, composite, CLI)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_phase3",
+      "label": "Phase 3 scope (dashboard, OCSP, metrics)",
+      "file_type": "concept",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_two_level_hierarchy",
+      "label": "Two-level CA hierarchy (root / intermediate / end-entity)",
+      "file_type": "rationale",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "An offline-capable ML-DSA-87 root is unsealed only to sign intermediates and CRLs, while the ML-DSA-65 intermediate issues end-entity certificates online; validity ladder 10y/5y/397d mirrors CA/B-forum-like hygiene."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pure_sign",
+      "label": "Pure-sign encoding mode (absent parameters, raw SPKI)",
+      "file_type": "rationale",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "draft-ietf-lamps-dilithium-certificates requires AlgorithmIdentifier parameters absent and public keys raw in the SPKI BIT STRING; pure-sign mode with an empty context string matches how ML-DSA is used in X.509."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_sealed_envelope",
+      "label": "Sealed key envelope (AAD-bound JSON)",
+      "file_type": "rationale",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "A versioned JSON envelope is inspectable; AES-GCM additional authenticated data binds the algorithm name so a sealed key cannot be silently reinterpreted under another algorithm."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_lazy_crl",
+      "label": "Lazy CRL regeneration with caching",
+      "file_type": "rationale",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "CRLs regenerate lazily and are cached per CA, so the CA passphrase (an Argon2id unseal) is only needed when a rebuild is genuinely required."
+    },
+    {
+      "id": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_strictness",
+      "label": "Strictness policy (hard errors, never warnings)",
+      "file_type": "rationale",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Malformed DER, unknown critical extensions, algorithm/profile mismatches and pathlen violations are always hard errors, never warnings, so trust decisions never degrade silently."
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_agpl",
+      "label": "AGPL-3.0 license",
+      "file_type": "rationale",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "AGPL preserves the future open-core/commercial model: anyone can self-host and audit, but a cloud vendor cannot offer pqtrust as a competing managed service without releasing changes; easy to relax to Apache-2.0 later, hard to go the other way."
+    },
+    {
+      "id": "docs_superpowers_specs_2026_08_16_pqtrust_design_open_core",
+      "label": "Open-core commercialization boundary",
+      "file_type": "rationale",
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The API is versioned (/v1), keystore.Backend is already an interface, all state flows through store, and issuance/revocation events are the natural hook for audit logging and metering — the commercial path stays open without adding scope now."
+    }
+  ],
+  "edges": [
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_plan",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_spec",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_circl",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_keystore",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_store",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_modernc_sqlite",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_keystore",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_store",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_store",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrustd",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_config",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrustd",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_store",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrustd",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_keystore",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrustd",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrustd",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_filebackend",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_backend",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_backend",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_signer",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_engine",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_certificate",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_engine",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_createcertificate",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_createcertificate",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_certificate",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_engine",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_server",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_engine",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_keystore",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_argon2id",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_keystore",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_aesgcm",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa44",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_fips204",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa65",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_fips204",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa87",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_fips204",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_slhdsa",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_fips205",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_circl",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_fips204",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_rfc5280",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_rfc7093",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_dilithium_draft",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pure_sign",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_dilithium_draft",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_rfc7807",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+    ,
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_acvp",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_acvp",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_fips204",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_x25519mlkem768",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_fips203",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_x25519mlkem768",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_go124",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrustd",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_x25519mlkem768",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_openssl35",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_cryptox509",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_cli",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrustd",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_two_level_hierarchy",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+    ,
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa87",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_two_level_hierarchy",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa65",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_two_level_hierarchy",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa44",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_two_level_hierarchy",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pure_sign",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_sealed_envelope",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_keystore",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_lazy_crl",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_strictness",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_strictness",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_agpl",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_open_core",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_phase1",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_phase2",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_phase2",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_phase3",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_phase2",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqtrust_cli",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_phase2",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_slhdsa",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_specs_2026_08_16_pqtrust_design_phase2",
+      "target": "docs_superpowers_specs_2026_08_16_pqtrust_design_composite_draft",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_plan",
+      "target": "docs_superpowers_plans_2026_08_16_pqtrust_phase1_phase1",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "issuance_data_flow",
+      "label": "Issuance data flow (api → ca → keystore → pqx509 → store)",
+      "nodes": [
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_api",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_keystore",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_store"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md"
+    },
+    {
+      "id": "two_level_ca_hierarchy",
+      "label": "Two-level CA hierarchy with ML-DSA algorithm ladder",
+      "nodes": [
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_two_level_hierarchy",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa87",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa65",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_mldsa44",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_ca"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/specs/2026-08-16-pqtrust-design.md"
+    },
+    {
+      "id": "third_party_verification",
+      "label": "Third-party correctness and interop verification (NIST ACVP + OpenSSL 3.5)",
+      "nodes": [
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_pqx509",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_acvp",
+        "docs_superpowers_plans_2026_08_16_pqtrust_phase1_openssl35"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/home/fernando/Escritorio/pqtrust/docs/superpowers/plans/2026-08-16-pqtrust-phase1.md"
+    }
+  ],
+  "input_tokens": 150000,
+  "output_tokens": 15000
+}
