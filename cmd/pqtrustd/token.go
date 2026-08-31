@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fernando/pqtrust/internal/api"
-	"github.com/fernando/pqtrust/internal/keystore"
-	"github.com/fernando/pqtrust/internal/store"
+	"github.com/fgpelaez/pqtrust/internal/api"
+	"github.com/fgpelaez/pqtrust/internal/keystore"
+	"github.com/fgpelaez/pqtrust/internal/store"
 )
 
 func ensureDir(dir string) error {

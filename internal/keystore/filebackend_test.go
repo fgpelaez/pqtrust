@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/fernando/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
 )
 
 func newTestBackend(t *testing.T) *FileBackend {

@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fernando/pqtrust/internal/ca"
-	"github.com/fernando/pqtrust/internal/keystore"
-	"github.com/fernando/pqtrust/internal/pqx509"
-	"github.com/fernando/pqtrust/internal/store"
+	"github.com/fgpelaez/pqtrust/internal/ca"
+	"github.com/fgpelaez/pqtrust/internal/keystore"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/store"
 )
 
 const testPassphrase = "test-passphrase"

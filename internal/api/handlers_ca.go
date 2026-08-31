@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fernando/pqtrust/internal/ca"
-	"github.com/fernando/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/ca"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
 )
 
 type subjectJSON struct {

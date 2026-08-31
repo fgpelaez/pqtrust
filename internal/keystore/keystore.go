@@ -7,7 +7,7 @@ import (
 	"io"
 	"regexp"
 
-	"github.com/fernando/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
 )
 
 // Backend generates, stores and loads sealed private keys. A future HSM or

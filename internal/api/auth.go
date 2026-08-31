@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fernando/pqtrust/internal/store"
+	"github.com/fgpelaez/pqtrust/internal/store"
 )
 
 // GenerateToken returns a new 256-bit API token in base64url form.

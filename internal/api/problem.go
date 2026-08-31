@@ -8,9 +8,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/fernando/pqtrust/internal/ca"
-	"github.com/fernando/pqtrust/internal/keystore"
-	"github.com/fernando/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/ca"
+	"github.com/fgpelaez/pqtrust/internal/keystore"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
 )
 
 // Problem type URNs.

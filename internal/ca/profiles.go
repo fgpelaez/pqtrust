@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fernando/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
 )
 
 var (

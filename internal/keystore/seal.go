@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/crypto/argon2"
 
-	"github.com/fernando/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
 )
 
 var (

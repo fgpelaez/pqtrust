@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/fernando/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
 )
 
 func TestCRLEmptyThenRevoked(t *testing.T) {

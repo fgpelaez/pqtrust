@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/fernando/pqtrust/internal/version"
+	"github.com/fgpelaez/pqtrust/internal/version"
 )
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {

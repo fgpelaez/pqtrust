@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fernando/pqtrust/internal/ca"
-	"github.com/fernando/pqtrust/internal/store"
+	"github.com/fgpelaez/pqtrust/internal/ca"
+	"github.com/fgpelaez/pqtrust/internal/store"
 )
 
 // Server routes pqtrust's HTTP API.

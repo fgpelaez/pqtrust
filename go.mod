@@ -1,4 +1,4 @@
-module github.com/fernando/pqtrust
+module github.com/fgpelaez/pqtrust
 
 go 1.25.0
 

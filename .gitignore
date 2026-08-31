@@ -39,8 +39,5 @@ AGENTS.md
 # Implementation plan (task-tracking, not public docs)
 docs/superpowers/plans/
 
-# Standalone utility scripts not part of the daemon
-scripts/parsecert/
-
 # Graphify git attributes (graphify-out is gitignored)
 .gitattributes

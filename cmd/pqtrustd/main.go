@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/fernando/pqtrust/internal/version"
+	"github.com/fgpelaez/pqtrust/internal/version"
 )
 
 func main() {

@@ -11,11 +11,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fernando/pqtrust/internal/api"
-	"github.com/fernando/pqtrust/internal/ca"
-	"github.com/fernando/pqtrust/internal/config"
-	"github.com/fernando/pqtrust/internal/keystore"
-	"github.com/fernando/pqtrust/internal/store"
+	"github.com/fgpelaez/pqtrust/internal/api"
+	"github.com/fgpelaez/pqtrust/internal/ca"
+	"github.com/fgpelaez/pqtrust/internal/config"
+	"github.com/fgpelaez/pqtrust/internal/keystore"
+	"github.com/fgpelaez/pqtrust/internal/store"
 )
 
 type app struct {

@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/fernando/pqtrust/internal/pqx509"
+	"github.com/fgpelaez/pqtrust/internal/pqx509"
 )
 
 type crlCacheEntry struct {
