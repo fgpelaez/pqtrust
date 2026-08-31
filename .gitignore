@@ -29,3 +29,6 @@ coverage.html
 
 # Large third-party ACVP vectors; refetch with ./scripts/fetch-acvp.sh
 /testdata/acvp/*.json
+
+# Graphify auto-generated knowledge graph
+/graphify-out/
