@@ -1,6 +1,6 @@
 module github.com/fgpelaez/pqtrust
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/cloudflare/circl v1.6.5

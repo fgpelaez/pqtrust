@@ -38,10 +38,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: 'stable'
       - uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v2.13.2
 
   vuln:
     runs-on: ubuntu-latest
@@ -49,5 +49,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: 'stable'
       - run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
