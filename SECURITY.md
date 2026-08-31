@@ -20,7 +20,7 @@ against `main` are the only thing receiving security fixes.
 ## Reporting a vulnerability
 
 Please use **GitHub Security Advisories** on this repository:
-<https://github.com/fernando/pqtrust/security/advisories/new>. The advisory
+<https://github.com/fgpelaez/pqtrust/security/advisories/new>. The advisory
 form gives you a private channel; do not file a public issue for anything
 that could affect a running deployment.
 

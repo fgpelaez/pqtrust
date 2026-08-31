@@ -9216,7 +9216,7 @@ It must contain, in this order:
 ````markdown
 ```bash
 # 1. Build
-git clone https://github.com/fernando/pqtrust && cd pqtrust
+git clone https://github.com/fgpelaez/pqtrust && cd pqtrust
 make build
 
 # 2. Configure

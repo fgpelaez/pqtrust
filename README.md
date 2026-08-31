@@ -1,7 +1,7 @@
 # pqtrust
 
-[![ci](https://github.com/fernando/pqtrust/actions/workflows/ci.yml/badge.svg)](https://github.com/fernando/pqtrust/actions/workflows/ci.yml)
-[![interop](https://github.com/fernando/pqtrust/actions/workflows/interop.yml/badge.svg)](https://github.com/fernando/pqtrust/actions/workflows/interop.yml)
+[![ci](https://github.com/fgpelaez/pqtrust/actions/workflows/ci.yml/badge.svg)](https://github.com/fgpelaez/pqtrust/actions/workflows/ci.yml)
+[![interop](https://github.com/fgpelaez/pqtrust/actions/workflows/interop.yml/badge.svg)](https://github.com/fgpelaez/pqtrust/actions/workflows/interop.yml)
 
 pqtrust is a self-hosted post-quantum certificate authority written in Go. It
 issues X.509 certificates signed with ML-DSA (FIPS 204, the NIST post-quantum
@@ -37,13 +37,13 @@ not built yet.
                 └──────┬──────┘
                        │
                        ▼
-   ┌────────────┐    ┌──────────┐    ┌────────────────┐
-   │ config     │───▶│ api      │───▶│ ca             │
+   ┌────────────┐    ┌───────────┐    ┌────────────────┐
+   │ config     │───▶│ api       │───▶│ ca             │
    │ YAML + env │    │ mux+routes│    │ engine+profiles│
-   └────────────┘    └────┬─────┘    └────────┬───────┘
-                          │                   │
-                          │            ┌──────┼──────────┬────────────┐
-                          ▼            ▼      ▼          ▼            ▼
+   └────────────┘    └────┬──────┘    └────────┬───────┘
+                          │                    │
+                          │            ┌───────┼──────────┬────────────┐
+                          ▼            ▼       ▼          ▼            ▼
                       ┌───────┐  ┌─────────┐ ┌────────┐ ┌─────────┐ ┌────────┐
                       │ store │  │ pqx509  │ │keystore│ │ store   │ │ pqx509 │
                       │ SQLite│  │ DER/CMS │ │ sealed │ │ (read)  │ │ (CRL)  │
@@ -70,7 +70,7 @@ ML-DSA-signed certificate on disk.
 
 ```bash
 # 1. Build
-git clone https://github.com/fernando/pqtrust && cd pqtrust
+git clone https://github.com/fgpelaez/pqtrust && cd pqtrust
 make build
 
 # 2. Configure
