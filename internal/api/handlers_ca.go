@@ -138,10 +138,10 @@ func (s *Server) handleGetCRL(w http.ResponseWriter, r *http.Request) {
 	if accept := r.Header.Get("Accept"); accept == "application/x-pem-file" {
 		w.Header().Set("Content-Type", "application/x-pem-file")
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write(pqx509.EncodeCRLPEM(der))
+		_, _ = w.Write(pqx509.EncodeCRLPEM(der)) //nolint:gosec // certificate PEM is not interpreted as HTML
 		return
 	}
 	w.Header().Set("Content-Type", "application/pkix-crl")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(der)
+	_, _ = w.Write(der) //nolint:gosec // DER certificate bytes are not interpreted as HTML
 }

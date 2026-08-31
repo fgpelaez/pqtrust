@@ -24,7 +24,7 @@ func NewFileBackend(dir string) (*FileBackend, error) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("keystore: creating key directory: %w", err)
 	}
-	if err := os.Chmod(dir, 0o700); err != nil {
+	if err := os.Chmod(dir, 0o700); err != nil { //nolint:gosec // key directory must be owner-only
 		return nil, fmt.Errorf("keystore: tightening key directory permissions: %w", err)
 	}
 	return &FileBackend{dir: dir}, nil
@@ -67,7 +67,7 @@ func (b *FileBackend) Store(keyID string, priv pqx509.PrivateKey, passphrase []b
 		}
 		return fmt.Errorf("keystore: creating key file: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	if _, err := f.Write(sealed); err != nil {
 		return fmt.Errorf("keystore: writing key file: %w", err)
 	}

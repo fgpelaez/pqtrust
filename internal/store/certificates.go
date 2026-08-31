@@ -71,7 +71,7 @@ func (s *Store) listCertificates(ctx context.Context, query string, args ...any)
 	if err != nil {
 		return nil, fmt.Errorf("store: listing certificates: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var out []Certificate
 	for rows.Next() {
 		c, err := scanCertificate(rows)
@@ -106,7 +106,7 @@ func (s *Store) RevokeCertificate(ctx context.Context, serial string, at time.Ti
 	if err != nil {
 		return fmt.Errorf("store: beginning revocation: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var status string
 	err = tx.QueryRowContext(ctx, `SELECT status FROM certificates WHERE serial = ?`, serial).Scan(&status)

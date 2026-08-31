@@ -32,7 +32,7 @@ func newHarness(t *testing.T) *harness {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { st.Close() })
+	t.Cleanup(func() { _ = st.Close() })
 	ks, err := keystore.NewFileBackend(filepath.Join(dir, "keys"))
 	if err != nil {
 		t.Fatal(err)
@@ -444,7 +444,7 @@ func TestTokenHelpers(t *testing.T) {
 	if len(HashToken(a)) != 64 {
 		t.Errorf("HashToken length = %d, want 64 hex characters", len(HashToken(a)))
 	}
-	if HashToken(a) != HashToken(a) {
+	if HashToken(a) != HashToken(string([]byte(a))) {
 		t.Error("HashToken must be deterministic")
 	}
 }

@@ -20,7 +20,7 @@ func newEngine(t *testing.T) *Engine {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { st.Close() })
+	t.Cleanup(func() { _ = st.Close() })
 	ks, err := keystore.NewFileBackend(filepath.Join(dir, "keys"))
 	if err != nil {
 		t.Fatal(err)
@@ -352,7 +352,7 @@ func TestInjectedClockGovernsValidity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { st.Close() })
+	t.Cleanup(func() { _ = st.Close() })
 	ks, err := keystore.NewFileBackend(filepath.Join(dir, "keys"))
 	if err != nil {
 		t.Fatal(err)

@@ -38,17 +38,17 @@ func TestGoldenSelfSignedRoot(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil { //nolint:gosec // generated golden fixtures are repository test data
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(path, der, 0o644); err != nil {
+		if err := os.WriteFile(path, der, 0o644); err != nil { //nolint:gosec // generated golden fixtures are repository test data
 			t.Fatal(err)
 		}
 		t.Log("golden fixture regenerated")
 		return
 	}
 
-	der, err := os.ReadFile(path)
+	der, err := os.ReadFile(path) //nolint:gosec // path is the fixed golden fixture location
 	if err != nil {
 		t.Fatalf("read golden fixture (run `go test ./internal/pqx509 -update` once to create it): %v", err)
 	}

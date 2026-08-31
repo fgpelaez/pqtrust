@@ -75,7 +75,7 @@ type acvpSigGenExpected struct {
 func loadJSON(t *testing.T, name string, v any) {
 	t.Helper()
 	path := filepath.Join("..", "..", "testdata", "acvp", name)
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is restricted to the testdata fixture directory
 	if err != nil {
 		t.Skipf("ACVP vectors missing (%v); run ./scripts/fetch-acvp.sh", err)
 	}

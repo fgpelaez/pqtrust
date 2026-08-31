@@ -270,7 +270,7 @@ func TestVerifyCheckRevocationHook(t *testing.T) {
 	_, err := h.leaf.Verify(VerifyOptions{
 		Roots:         []*Certificate{h.root},
 		Intermediates: []*Certificate{h.inter},
-		CheckRevocation: func(cert, issuer *Certificate) error {
+		CheckRevocation: func(cert, _ *Certificate) error {
 			called++
 			if cert.Subject.CommonName == "api.example.com" {
 				return ErrRevoked

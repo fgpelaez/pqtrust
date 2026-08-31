@@ -101,7 +101,9 @@ func TestTokenCreateThenServeAndAuthenticate(t *testing.T) {
 		t.Fatalf("health request never succeeded: %v", err)
 	}
 	body, _ := io.ReadAll(resp.Body)
-	resp.Body.Close()
+	if err := resp.Body.Close(); err != nil {
+		t.Errorf("closing health response body: %v", err)
+	}
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("health = %d %s", resp.StatusCode, body)
 	}
@@ -127,7 +129,7 @@ func TestTokenCreateThenServeAndAuthenticate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer resp2.Body.Close()
+	defer func() { _ = resp2.Body.Close() }()
 	if resp2.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp2.Body)
 		t.Fatalf("list CAs = %d %s", resp2.StatusCode, b)
@@ -139,7 +141,9 @@ func TestTokenCreateThenServeAndAuthenticate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp3.Body.Close()
+	if err := resp3.Body.Close(); err != nil {
+		t.Errorf("closing bogus-token response body: %v", err)
+	}
 	if resp3.StatusCode != http.StatusUnauthorized {
 		t.Errorf("bogus token = %d, want 401", resp3.StatusCode)
 	}

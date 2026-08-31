@@ -42,11 +42,11 @@ func (s *Store) migrate() error {
 			return fmt.Errorf("store: beginning migration %s: %w", name, err)
 		}
 		if _, err := tx.Exec(string(sqlBytes)); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("store: applying migration %s: %w", name, err)
 		}
 		if _, err := tx.Exec(`INSERT INTO schema_migrations(name) VALUES (?)`, name); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("store: recording migration %s: %w", name, err)
 		}
 		if err := tx.Commit(); err != nil {

@@ -19,7 +19,7 @@ const (
 	typeUnauthorized        = "urn:pqtrust:error:unauthorized"
 	typeNotFound            = "urn:pqtrust:error:not-found"
 	typeConflict            = "urn:pqtrust:error:conflict"
-	typeWrongPassphrase     = "urn:pqtrust:error:wrong-passphrase"
+	typeWrongPassphrase     = "urn:pqtrust:error:wrong-passphrase" //nolint:gosec // this is an error type URN, not a credential
 	typeConstraintViolation = "urn:pqtrust:error:constraint-violation"
 	typeInternal            = "urn:pqtrust:error:internal"
 )

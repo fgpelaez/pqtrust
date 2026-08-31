@@ -60,7 +60,7 @@ func (s *Store) ListCAs(ctx context.Context) ([]CA, error) {
 	if err != nil {
 		return nil, fmt.Errorf("store: listing CAs: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var out []CA
 	for rows.Next() {
 		ca, err := scanCA(rows)

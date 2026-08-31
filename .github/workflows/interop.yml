@@ -22,10 +22,11 @@ jobs:
           curl -fsSLO "https://github.com/openssl/openssl/releases/download/openssl-${version}/openssl-${version}.tar.gz"
           tar xzf "openssl-${version}.tar.gz"
           cd "openssl-${version}"
-          ./Configure --prefix=/opt/openssl35 --openssldir=/opt/openssl35/ssl
+          ./Configure --prefix=/opt/openssl35 --openssldir=/opt/openssl35/ssl --libdir=lib
           make -j"$(nproc)"
           sudo make install_sw
           echo "/opt/openssl35/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=/opt/openssl35/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
       - name: Verify the OpenSSL version
         run: openssl version
       - name: Interop

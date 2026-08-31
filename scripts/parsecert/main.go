@@ -14,7 +14,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "usage: parsecert <certificate.pem>")
 		os.Exit(2)
 	}
-	pemBytes, err := os.ReadFile(os.Args[1])
+	pemBytes, err := os.ReadFile(os.Args[1]) //nolint:gosec // this CLI intentionally reads the user-selected certificate
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "parsecert:", err)
 		os.Exit(1)

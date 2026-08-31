@@ -233,7 +233,7 @@ func buildExtensions(template *Certificate, pub PublicKey, signer Signer, subjec
 	}
 
 	for _, e := range template.UnhandledExtensions {
-		exts = append(exts, extension{ID: e.ID, Critical: e.Critical, Value: e.Value})
+		exts = append(exts, extension{ID: e.ID, Critical: e.Critical, Value: e.Value}) //nolint:staticcheck // internal ASN.1 type has a distinct struct tag
 	}
 	return exts, nil
 }

@@ -76,6 +76,8 @@ type CreateCARequest struct {
 }
 
 // CAResult is a CA and its chain.
+//
+//nolint:revive // CAResult is the established domain name exposed by the CA package.
 type CAResult struct {
 	ID          string
 	Name        string

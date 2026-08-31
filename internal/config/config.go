@@ -66,7 +66,7 @@ func Default() Config {
 func Load(path string) (Config, error) {
 	c := Default()
 	if path != "" {
-		data, err := os.ReadFile(path)
+		data, err := os.ReadFile(path) //nolint:gosec // the operator explicitly supplies the config path
 		if err != nil {
 			return Config{}, fmt.Errorf("config: reading %s: %w", path, err)
 		}
