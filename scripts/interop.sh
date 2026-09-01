@@ -106,8 +106,11 @@ openssl crl -in "$work/crl.pem" -noout -text | grep -qi "$serial" \
 openssl crl -in "$work/crl.pem" -CAfile "$work/intermediate.pem" -noout -verify
 
 echo "== our parser must read an OpenSSL-generated ML-DSA certificate =="
+# -config /dev/null keeps req independent of openssl.cnf (CI builds install_sw
+# only, so no config file exists); -addext forces a v3 cert, which our parser requires.
 openssl req -x509 -newkey ml-dsa-65 -keyout "$work/ossl.key" -out "$work/ossl.pem" \
-	-days 30 -nodes -subj "/CN=openssl-generated"
+	-days 30 -nodes -subj "/CN=openssl-generated" \
+	-config /dev/null -addext "basicConstraints=critical,CA:TRUE"
 CGO_ENABLED=0 go run ./scripts/parsecert "$work/ossl.pem"
 
 echo "ALL INTEROP CHECKS PASSED"

@@ -311,3 +311,85 @@ func TestParseCertificateRejectsTBSAlgorithmIdentifierParameters(t *testing.T) {
 		t.Errorf("err = %v, want one wrapping ErrMalformedDER", err)
 	}
 }
+
+// TestParseCertificateOpenSSLMinimalShape parses a v3 certificate carrying only
+// a critical basicConstraints extension — exactly what
+// `openssl req -x509 -config /dev/null -addext "basicConstraints=critical,CA:TRUE"`
+// produces (no SKID/AKID). The interop script feeds such a certificate to our parser.
+func TestParseCertificateOpenSSLMinimalShape(t *testing.T) {
+	pub, priv, err := GenerateKey(rand.Reader, MLDSA65)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer, err := priv.Signer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	nameDER, err := Name{CommonName: "openssl-generated"}.ToRDNSequence()
+	if err != nil {
+		t.Fatal(err)
+	}
+	serial, err := GenerateSerialNumber(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	nb, err := marshalTime(time.Now().Add(-time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	na, err := marshalTime(time.Now().Add(30 * 24 * time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	spki, err := MarshalPKIXPublicKey(pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var spkiStruct subjectPublicKeyInfo
+	if _, err := asn1.Unmarshal(spki, &spkiStruct); err != nil {
+		t.Fatal(err)
+	}
+	bc, err := marshalBasicConstraints(BasicConstraints{IsCA: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	tbs := tbsCertificate{
+		Version:            2,
+		SerialNumber:       serial,
+		SignatureAlgorithm: algorithmIdentifier{Algorithm: MLDSA65.OID()},
+		Issuer:             asn1.RawValue{FullBytes: nameDER},
+		Validity:           validity{NotBefore: nb, NotAfter: na},
+		Subject:            asn1.RawValue{FullBytes: nameDER},
+		PublicKey:          spkiStruct,
+		Extensions:         []extension{{ID: oidExtBasicConstraints, Critical: true, Value: bc}},
+	}
+	tbsDER, err := asn1.Marshal(tbs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sig, err := signer.Sign(rand.Reader, tbsDER)
+	if err != nil {
+		t.Fatal(err)
+	}
+	der, err := asn1.Marshal(certificateDER{
+		TBSCertificate:     asn1.RawValue{FullBytes: tbsDER},
+		SignatureAlgorithm: algorithmIdentifier{Algorithm: MLDSA65.OID()},
+		SignatureValue:     asn1.BitString{Bytes: sig, BitLength: len(sig) * 8},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	cert, err := ParseCertificate(der)
+	if err != nil {
+		t.Fatalf("ParseCertificate must accept an OpenSSL-style cert without SKID/AKID: %v", err)
+	}
+	if cert.Subject.CommonName != "openssl-generated" {
+		t.Errorf("subject CN = %q", cert.Subject.CommonName)
+	}
+	if !cert.BasicConstraints.IsCA {
+		t.Error("basicConstraints cA=TRUE not parsed")
+	}
+	if err := cert.VerifySignatureFrom(cert); err != nil {
+		t.Errorf("self-signature: %v", err)
+	}
+}

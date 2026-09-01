@@ -87,14 +87,14 @@ func marshalSequence(content []byte) []byte {
 // marshalLength encodes a DER length field.
 func marshalLength(l int) []byte {
 	if l < 0x80 {
-		return []byte{byte(l)}
+		return []byte{byte(l)} //nolint:gosec // G115: branch guard ensures l < 0x80
 	}
 	// Long form: first byte = 0x80 | number of length bytes
 	var buf []byte
 	for v := l; v > 0; v >>= 8 {
-		buf = append([]byte{byte(v)}, buf...)
+		buf = append([]byte{byte(v)}, buf...) //nolint:gosec // G115: low byte of v; higher bytes are captured by the shift loop
 	}
-	return append([]byte{byte(0x80 | len(buf))}, buf...)
+	return append([]byte{byte(0x80 | len(buf))}, buf...) //nolint:gosec // G115: len(buf) <= 8 for any int
 }
 
 func marshalDirectoryString(s string) (asn1.RawValue, error) {
@@ -231,8 +231,8 @@ func parseDERLength(data []byte) (int, []byte, error) {
 		return 0, nil, fmt.Errorf("short read in length bytes")
 	}
 	l := 0
-	for i := 1; i <= numBytes; i++ {
-		l = l<<8 | int(data[i])
+	for _, b := range data[1 : 1+numBytes] {
+		l = l<<8 | int(b)
 	}
 	return l, data[1+numBytes:], nil
 }
