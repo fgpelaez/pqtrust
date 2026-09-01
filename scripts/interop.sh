@@ -78,10 +78,10 @@ import json, os, re
 work = os.environ["WORK"]
 d = json.load(open(os.path.join(work, "issued.json")))
 open(os.path.join(work, "serial.txt"), "w").write(d["serial"])
-blocks = re.findall(r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----\n", d["chain_pem"], re.S)
+blocks = re.findall(r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", d["chain_pem"], re.S)
 assert len(blocks) == 3, f"expected 3 certificates in the chain, got {len(blocks)}"
 for name, block in zip(["leaf.pem", "intermediate.pem", "root.pem"], blocks):
-    open(os.path.join(work, name), "w").write(block)
+    open(os.path.join(work, name), "w").write(block + "\n")
 PY
 
 echo "== openssl x509 -text must parse our ML-DSA certificates =="
