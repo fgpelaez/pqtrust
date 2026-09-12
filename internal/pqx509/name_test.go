@@ -271,3 +271,63 @@ func TestParseNameRejectsBrokenBMPAndUniversal(t *testing.T) {
 		}
 	}
 }
+
+func TestParseNameStringEscapes(t *testing.T) {
+	n, err := ParseNameString(`CN=Smith\, John,O=pqtrust`)
+	if err != nil {
+		t.Fatalf("ParseNameString: %v", err)
+	}
+	if n.CommonName != "Smith, John" {
+		t.Errorf("CommonName = %q, want %q", n.CommonName, "Smith, John")
+	}
+	if got := n.String(); got != `CN=Smith\, John,O=pqtrust` {
+		t.Errorf("String() = %q, want %q", got, `CN=Smith\, John,O=pqtrust`)
+	}
+}
+
+func TestParseNameStringHexEscape(t *testing.T) {
+	n, err := ParseNameString(`CN=\4Fk`)
+	if err != nil {
+		t.Fatalf("ParseNameString: %v", err)
+	}
+	if n.CommonName != "Ok" {
+		t.Errorf("CommonName = %q, want %q", n.CommonName, "Ok")
+	}
+}
+
+func TestNameStringRoundTripSpecials(t *testing.T) {
+	n := Name{
+		CommonName:   `a+b"c<d>e;f\g, h`,
+		Organization: []string{" leading", "trailing "},
+	}
+	m, err := ParseNameString(n.String())
+	if err != nil {
+		t.Fatalf("round-trip parse: %v (String was %q)", err, n.String())
+	}
+	if m.CommonName != n.CommonName {
+		t.Errorf("CommonName round-trip = %q, want %q", m.CommonName, n.CommonName)
+	}
+	if len(m.Organization) != len(n.Organization) {
+		t.Fatalf("Organization round-trip len = %d, want %d", len(m.Organization), len(n.Organization))
+	}
+	for i := range n.Organization {
+		if m.Organization[i] != n.Organization[i] {
+			t.Errorf("Organization[%d] round-trip = %q, want %q", i, m.Organization[i], n.Organization[i])
+		}
+	}
+}
+
+func TestParseNameStringRejectsUnsupportedForms(t *testing.T) {
+	cases := []string{
+		`CN=trailing\`, // dangling escape
+		`CN=\ZZ`,       // invalid hexpair
+		`CN=a+b`,       // multi-valued RDN (unescaped +)
+		`CN=#04024869`, // hex-encoded attribute value (leading #)
+		`CN=`,          // empty value
+	}
+	for _, s := range cases {
+		if _, err := ParseNameString(s); err == nil {
+			t.Errorf("ParseNameString(%q) must fail", s)
+		}
+	}
+}

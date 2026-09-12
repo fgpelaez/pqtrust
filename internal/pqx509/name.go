@@ -292,40 +292,85 @@ func decodeUniversalString(b []byte) (string, error) {
 	return sb.String(), nil
 }
 
-// String renders n as a comma-separated RFC 4514-style DN, most specific first.
+// String renders n as a comma-separated RFC 4514-style DN, most specific first,
+// escaping characters RFC 4514 reserves so that ParseNameString(String()) is
+// lossless.
 func (n Name) String() string {
 	var parts []string
 	if n.CommonName != "" {
-		parts = append(parts, "CN="+n.CommonName)
+		parts = append(parts, "CN="+escapeAttributeValue(n.CommonName))
 	}
 	for _, v := range n.OrganizationalUnit {
-		parts = append(parts, "OU="+v)
+		parts = append(parts, "OU="+escapeAttributeValue(v))
 	}
 	for _, v := range n.Organization {
-		parts = append(parts, "O="+v)
+		parts = append(parts, "O="+escapeAttributeValue(v))
 	}
 	for _, v := range n.Locality {
-		parts = append(parts, "L="+v)
+		parts = append(parts, "L="+escapeAttributeValue(v))
 	}
 	for _, v := range n.Province {
-		parts = append(parts, "ST="+v)
+		parts = append(parts, "ST="+escapeAttributeValue(v))
 	}
 	for _, v := range n.Country {
-		parts = append(parts, "C="+v)
+		parts = append(parts, "C="+escapeAttributeValue(v))
 	}
 	return strings.Join(parts, ",")
 }
 
-// ParseNameString parses the form String produces. Unknown attribute types are
-// a hard error so that a typo in an API request never silently drops a field.
+// escapeAttributeValue applies RFC 4514 section 2.4 escaping: the seven
+// reserved characters always, and a leading '#' or leading/trailing space.
+func escapeAttributeValue(v string) string {
+	needsEscape := func(c byte) bool {
+		switch c {
+		case ',', '+', '"', '\\', '<', '>', ';':
+			return true
+		default:
+			return false
+		}
+	}
+	var sb strings.Builder
+	for i := 0; i < len(v); i++ {
+		c := v[i]
+		switch {
+		case needsEscape(c):
+			sb.WriteByte('\\')
+			sb.WriteByte(c)
+		case (c == '#' || c == ' ') && i == 0, c == ' ' && i == len(v)-1:
+			sb.WriteByte('\\')
+			sb.WriteByte(c)
+		default:
+			sb.WriteByte(c)
+		}
+	}
+	return sb.String()
+}
+
+// ParseNameString parses the RFC 4514 form String produces, honoring escapes
+// before splitting. Unknown attribute types are a hard error so that a typo in
+// an API request never silently drops a field.
 func ParseNameString(s string) (Name, error) {
 	var n Name
 	if strings.TrimSpace(s) == "" {
 		return n, fmt.Errorf("pqx509: empty distinguished name")
 	}
-	for _, part := range strings.Split(s, ",") {
-		key, value, ok := strings.Cut(strings.TrimSpace(part), "=")
-		if !ok || key == "" || value == "" {
+	for _, part := range splitUnescaped(s, ',') {
+		key, rawValue, ok := strings.Cut(part, "=")
+		if !ok || strings.TrimSpace(key) == "" {
+			return Name{}, fmt.Errorf("pqx509: malformed DN component %q", part)
+		}
+		key = strings.TrimSpace(key)
+		if len(splitUnescaped(rawValue, '+')) > 1 {
+			return Name{}, fmt.Errorf("pqx509: multi-valued RDNs are not supported: %q", part)
+		}
+		if len(rawValue) > 0 && rawValue[0] == '#' {
+			return Name{}, fmt.Errorf("pqx509: hex-encoded attribute values are not supported: %q", part)
+		}
+		value, err := unescapeAttributeValue(rawValue)
+		if err != nil {
+			return Name{}, err
+		}
+		if value == "" {
 			return Name{}, fmt.Errorf("pqx509: malformed DN component %q", part)
 		}
 		switch strings.ToUpper(key) {
@@ -346,4 +391,68 @@ func ParseNameString(s string) (Name, error) {
 		}
 	}
 	return n, nil
+}
+
+// splitUnescaped splits s on sep, treating sep preceded by an odd number of
+// backslashes as literal (escaped) rather than a separator.
+func splitUnescaped(s string, sep byte) []string {
+	var parts []string
+	start := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] != sep {
+			continue
+		}
+		n := 0
+		for j := i - 1; j >= 0 && s[j] == '\\'; j-- {
+			n++
+		}
+		if n%2 == 0 {
+			parts = append(parts, s[start:i])
+			start = i + 1
+		}
+	}
+	return append(parts, s[start:])
+}
+
+// unescapeAttributeValue decodes RFC 4514 escapes: backslash-special,
+// backslash-backslash and backslash-hexpair.
+func unescapeAttributeValue(v string) (string, error) {
+	isHex := func(c byte) bool {
+		return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'
+	}
+	hexVal := func(c byte) byte {
+		switch {
+		case c >= '0' && c <= '9':
+			return c - '0'
+		case c >= 'a' && c <= 'f':
+			return c - 'a' + 10
+		default:
+			return c - 'A' + 10
+		}
+	}
+	var sb strings.Builder
+	for i := 0; i < len(v); i++ {
+		c := v[i]
+		if c != '\\' {
+			sb.WriteByte(c)
+			continue
+		}
+		i++
+		if i >= len(v) {
+			return "", fmt.Errorf("pqx509: trailing escape in DN component %q", v)
+		}
+		e := v[i]
+		switch e {
+		case ',', '+', '"', '\\', '<', '>', ';', ' ', '#', '=':
+			sb.WriteByte(e)
+		default:
+			if isHex(e) && i+1 < len(v) && isHex(v[i+1]) {
+				sb.WriteByte(hexVal(e)<<4 | hexVal(v[i+1])) //nolint:gosec // G115: two nibbles assembled into a byte
+				i++
+				continue
+			}
+			return "", fmt.Errorf("pqx509: invalid escape \\%c in DN component %q", e, v)
+		}
+	}
+	return sb.String(), nil
 }
