@@ -90,7 +90,7 @@ The ignore-list is documented in `LIMITATIONS.md` so the behavior is visible.
 ```go
 func MarshalPKCS8PrivateKey(priv PrivateKey) ([]byte, error)
 func ParsePKCS8PrivateKey(der []byte) (PrivateKey, error)
-func EncodePrivateKeyPEM(priv PrivateKey) []byte   // PEM type "PRIVATE KEY"
+func EncodePrivateKeyPEM(priv PrivateKey) ([]byte, error) // PEM type "PRIVATE KEY"
 func DecodePrivateKeyPEM(b []byte) (PrivateKey, error)
 ```
 
@@ -121,8 +121,12 @@ field `private_key_pem` switches to PKCS#8 on the keygen path.
 - `ParseNameString` un-escapes RFC 4514 escapes **before** splitting on
   separators: `\<special>`, `\\`, `\#`, and `\<hexpair><hexpair>` forms, where
   special = `, + " \ ; < > =` and space-at-edge. `CN=Smith\, John` parses as
-  one RDN with an embedded comma. `String()` already escapes on the way out;
-  the round-trip stays symmetric.
+  one RDN with an embedded comma. `String()` currently emits values unescaped;
+  it gains the matching escaping so the round-trip becomes symmetric.
+- Two RFC 4514 forms are **rejected** as unsupported, because pqtrust's `Name`
+  model cannot represent them: hex-encoded attribute values (a leading
+  unescaped `#`) and multi-valued RDNs (an unescaped `+`). Both are hard
+  errors, documented in `LIMITATIONS.md`.
 
 ## 3. ca engine wiring
 
@@ -191,7 +195,7 @@ unchanged.
 
 | Layer | New tests |
 |---|---|
-| `pqx509` | CSR round-trip (`Parse(Create(x)) == x` incl. SANs + non-ASCII DN); `CheckSignature` negatives: flipped signature bit, tampered CRI, NULL params, version ≠ 0, trailing bytes; extensionRequest: SANs honored, EKU ignored, duplicate attribute rejected; PKCS#8 round-trip, legacy PEM decode, wrong-size seed; BMPString/UniversalString hand-built DER fixtures; RFC 4514 escapes: `CN=Smith\, John`, hexpairs, `\\`, round-trip symmetry; golden CSR fixture |
+| `pqx509` | CSR round-trip (`Parse(Create(x)) == x` incl. SANs + non-ASCII DN); `CheckSignature` negatives: flipped signature bit, tampered CRI, NULL params, version ≠ 0, trailing bytes; extensionRequest: SANs honored, EKU ignored, duplicate attribute rejected; PKCS#8 round-trip, legacy PEM decode, wrong-size seed; BMPString/UniversalString hand-built DER fixtures; RFC 4514 escapes: `CN=Smith\, John`, hexpairs, `\\`, round-trip symmetry, rejection of leading `#` and unescaped `+`; golden CSR fixture |
 | `ca` | CSR issuance flow (subject/SANs/algorithm from CSR); CSR with ML-DSA-87 → constraint violation; CSR-path result carries no private key |
 | `api` | httptest: CSR happy path; forbidden-field violations (`csr_pem` + non-empty `subject`/`algorithm`/SANs or `store_key: true`) → 400 with field name; tampered CSR → 400; CSR response omits `private_key_pem`; keygen path regression (PKCS#8 PEM now) |
 | Interop (CI) | Extend `scripts/interop.sh` + interop workflow: OpenSSL 3.5 generates an ML-DSA CSR → pqtrust parses + verifies; pqtrust generates a CSR → `openssl req -verify` accepts; the cert issued from it passes `openssl verify -CAfile` |
