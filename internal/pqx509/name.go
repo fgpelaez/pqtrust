@@ -4,6 +4,8 @@ import (
 	"encoding/asn1"
 	"fmt"
 	"strings"
+	"unicode/utf16"
+	"unicode/utf8"
 )
 
 var (
@@ -14,6 +16,10 @@ var (
 	oidLocality           = asn1.ObjectIdentifier{2, 5, 4, 7}
 	oidProvince           = asn1.ObjectIdentifier{2, 5, 4, 8}
 )
+
+// tagUniversalString is X.690 UniversalString (UTF-32BE). encoding/asn1
+// exports no constant for it, unlike TagBMPString.
+const tagUniversalString = 28
 
 // Name is the subset of X.501 Name attributes pqtrust supports.
 type Name struct {
@@ -241,9 +247,49 @@ func parseDirectoryString(rv asn1.RawValue) (string, error) {
 	switch rv.Tag {
 	case asn1.TagPrintableString, asn1.TagUTF8String, asn1.TagIA5String, asn1.TagT61String:
 		return string(rv.Bytes), nil
+	case asn1.TagBMPString:
+		s, err := decodeBMPString(rv.Bytes)
+		if err != nil {
+			return "", err
+		}
+		return s, nil
+	case tagUniversalString:
+		s, err := decodeUniversalString(rv.Bytes)
+		if err != nil {
+			return "", err
+		}
+		return s, nil
 	default:
 		return "", fmt.Errorf("%w: unsupported directory string tag %d", ErrMalformedDER, rv.Tag)
 	}
+}
+
+// decodeBMPString converts a UTF-16BE BMPString to a Go string.
+func decodeBMPString(b []byte) (string, error) {
+	if len(b)%2 != 0 {
+		return "", fmt.Errorf("%w: BMPString is %d bytes, not a multiple of 2", ErrMalformedDER, len(b))
+	}
+	units := make([]uint16, len(b)/2)
+	for i := range units {
+		units[i] = uint16(b[2*i])<<8 | uint16(b[2*i+1]) //nolint:gosec // G115: two bytes assembled into uint16
+	}
+	return string(utf16.Decode(units)), nil
+}
+
+// decodeUniversalString converts a UTF-32BE UniversalString to a Go string.
+func decodeUniversalString(b []byte) (string, error) {
+	if len(b)%4 != 0 {
+		return "", fmt.Errorf("%w: UniversalString is %d bytes, not a multiple of 4", ErrMalformedDER, len(b))
+	}
+	var sb strings.Builder
+	for i := 0; i < len(b); i += 4 {
+		r := rune(b[i])<<24 | rune(b[i+1])<<16 | rune(b[i+2])<<8 | rune(b[i+3]) //nolint:gosec // G115: four bytes assembled into a rune
+		if !utf8.ValidRune(r) {
+			return "", fmt.Errorf("%w: UniversalString rune %#x is invalid", ErrMalformedDER, r)
+		}
+		sb.WriteRune(r)
+	}
+	return sb.String(), nil
 }
 
 // String renders n as a comma-separated RFC 4514-style DN, most specific first.

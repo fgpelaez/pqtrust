@@ -2,6 +2,7 @@ package pqx509
 
 import (
 	"encoding/asn1"
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -213,4 +214,59 @@ func TestParseNameRejectsNonDERSetLength(t *testing.T) {
 		}
 	}
 	t.Fatal("test premise failed: no SET found")
+}
+
+func TestParseNameAcceptsBMPAndUniversalString(t *testing.T) {
+	// CN = "héllo" as BMPString (tag 30, UTF-16BE); OU = "ñ" as UniversalString (tag 28, UTF-32BE).
+	bmp := []byte{0x00, 'h', 0x00, 0xE9, 0x00, 'l', 0x00, 'l', 0x00, 'o'}
+	uni := []byte{0x00, 0x00, 0x00, 0xF1}
+
+	build := func(oid asn1.ObjectIdentifier, tag byte, content []byte) []byte {
+		oidDER, err := asn1.Marshal(oid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rv := append([]byte{tag}, append(marshalLength(len(content)), content...)...)
+		return marshalSet(marshalSequence(append(oidDER, rv...)))
+	}
+
+	nameDER := marshalSequence(append(
+		build(asn1.ObjectIdentifier{2, 5, 4, 11}, tagUniversalString, uni),
+		build(oidCommonName, asn1.TagBMPString, bmp)...,
+	))
+
+	n, err := ParseName(nameDER)
+	if err != nil {
+		t.Fatalf("ParseName must accept BMPString/UniversalString: %v", err)
+	}
+	if n.CommonName != "héllo" {
+		t.Errorf("CommonName = %q, want %q", n.CommonName, "héllo")
+	}
+	if len(n.OrganizationalUnit) != 1 || n.OrganizationalUnit[0] != "ñ" {
+		t.Errorf("OrganizationalUnit = %v, want [ñ]", n.OrganizationalUnit)
+	}
+}
+
+func TestParseNameRejectsBrokenBMPAndUniversal(t *testing.T) {
+	build := func(tag byte, content []byte) []byte {
+		oidDER, err := asn1.Marshal(oidCommonName)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rv := append([]byte{tag}, append(marshalLength(len(content)), content...)...)
+		return marshalSequence(marshalSet(marshalSequence(append(oidDER, rv...))))
+	}
+	cases := []struct {
+		name string
+		der  []byte
+	}{
+		{"odd BMPString", build(asn1.TagBMPString, []byte{0x00, 'a', 0x00})},
+		{"UniversalString not multiple of 4", build(tagUniversalString, []byte{0x00, 0x00, 0x00})},
+		{"UniversalString surrogate", build(tagUniversalString, []byte{0x00, 0x00, 0xD8, 0x00})},
+	}
+	for _, tc := range cases {
+		if _, err := ParseName(tc.der); !errors.Is(err, ErrMalformedDER) {
+			t.Errorf("%s: want ErrMalformedDER, got %v", tc.name, err)
+		}
+	}
 }
