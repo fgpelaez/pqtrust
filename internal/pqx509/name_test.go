@@ -188,7 +188,8 @@ func TestParseSetAndSequenceRejectMalformed(t *testing.T) {
 }
 
 func TestParseDirectoryStringRejectsUnsupportedTag(t *testing.T) {
-	if _, err := parseDirectoryString(asn1.RawValue{Tag: asn1.TagBMPString, Bytes: []byte("x")}); err == nil {
+	// Tag 18 is NumericString, which parseDirectoryString does not support.
+	if _, err := parseDirectoryString(asn1.RawValue{Tag: 18, Bytes: []byte("x")}); err == nil {
 		t.Error("parseDirectoryString must reject unsupported tags")
 	}
 	for _, tag := range []int{asn1.TagPrintableString, asn1.TagUTF8String, asn1.TagIA5String, asn1.TagT61String} {
