@@ -1,8 +1,11 @@
 package ca
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
 	"errors"
+	"net"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -192,8 +195,15 @@ func TestIssueCertificate(t *testing.T) {
 	if res.PrivateKeyPEM == "" {
 		t.Error("the private key must be returned when StoreKey is false")
 	}
-	if !strings.Contains(res.PrivateKeyPEM, "PQTRUST ML-DSA PRIVATE KEY") {
+	if !strings.Contains(res.PrivateKeyPEM, "-----BEGIN PRIVATE KEY-----") {
 		t.Errorf("unexpected private key PEM: %q", res.PrivateKeyPEM[:40])
+	}
+	privKey, err := pqx509.DecodePrivateKeyPEM([]byte(res.PrivateKeyPEM))
+	if err != nil {
+		t.Fatalf("decoding private key PEM: %v", err)
+	}
+	if privKey.Algorithm != pqx509.MLDSA44 {
+		t.Errorf("private key algorithm = %v, want ML-DSA-44", privKey.Algorithm)
 	}
 	leaf := res.Certificate
 	if leaf.PublicKey.Algorithm != pqx509.MLDSA44 {
@@ -372,5 +382,107 @@ func TestInjectedClockGovernsValidity(t *testing.T) {
 	}
 	if root.Certificate.NotAfter.Year() != 2040 {
 		t.Errorf("NotAfter year = %d, want 2040", root.Certificate.NotAfter.Year())
+	}
+}
+
+func makeTestCSR(t *testing.T, subj pqx509.Name, sans pqx509.SANs, alg pqx509.Algorithm) *pqx509.CertificateRequest {
+	t.Helper()
+	pub, priv, err := pqx509.GenerateKey(rand.Reader, alg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer, err := priv.Signer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	der, err := pqx509.CreateCertificateRequest(rand.Reader, subj, pub, signer, sans)
+	if err != nil {
+		t.Fatal(err)
+	}
+	csr, err := pqx509.ParseCertificateRequest(der)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return csr
+}
+
+func TestIssueFromCSR(t *testing.T) {
+	e := newEngine(t)
+	root := createRoot(t, e)
+	inter := createIntermediate(t, e, root.ID)
+
+	csr := makeTestCSR(t,
+		pqx509.Name{CommonName: "csr.example.com", Organization: []string{"pqtrust"}},
+		pqx509.SANs{DNSNames: []string{"csr.example.com"}, IPAddresses: []net.IP{net.ParseIP("127.0.0.1")}},
+		pqx509.MLDSA44)
+
+	res, err := e.IssueCertificate(context.Background(), IssueRequest{
+		CAID:         inter.ID,
+		CAPassphrase: []byte(pass),
+		CSR:          csr,
+		ExtKeyUsage:  []pqx509.ExtKeyUsage{pqx509.ExtKeyUsageClientAuth},
+	})
+	if err != nil {
+		t.Fatalf("IssueCertificate from CSR: %v", err)
+	}
+	if res.PrivateKeyPEM != "" {
+		t.Error("CSR issuance must not return a private key")
+	}
+	if res.Certificate.Subject.CommonName != "csr.example.com" {
+		t.Errorf("CN = %q", res.Certificate.Subject.CommonName)
+	}
+	if len(res.Certificate.SANs.DNSNames) != 1 || res.Certificate.SANs.DNSNames[0] != "csr.example.com" {
+		t.Errorf("DNSNames = %v", res.Certificate.SANs.DNSNames)
+	}
+	if len(res.Certificate.SANs.IPAddresses) != 1 {
+		t.Errorf("IPAddresses = %v", res.Certificate.SANs.IPAddresses)
+	}
+	if !bytes.Equal(res.Certificate.PublicKey.Bytes, csr.PublicKey.Bytes) {
+		t.Error("certificate public key must be the CSR public key")
+	}
+	if res.Certificate.ExtKeyUsage[0] != pqx509.ExtKeyUsageClientAuth {
+		t.Errorf("EKU = %v, want clientAuth from the request", res.Certificate.ExtKeyUsage)
+	}
+	rec, err := e.GetCertificate(context.Background(), res.Serial)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.SubjectDN != "CN=csr.example.com,O=pqtrust" {
+		t.Errorf("stored SubjectDN = %q", rec.SubjectDN)
+	}
+	if rec.KeyID != "" {
+		t.Error("CSR issuance must not store a key")
+	}
+}
+
+func TestIssueFromCSRConstraints(t *testing.T) {
+	e := newEngine(t)
+	root := createRoot(t, e)
+	inter := createIntermediate(t, e, root.ID)
+
+	// End-entity profile forbids ML-DSA-87.
+	csr87 := makeTestCSR(t, pqx509.Name{CommonName: "x"}, pqx509.SANs{DNSNames: []string{"x.example.com"}}, pqx509.MLDSA87)
+	if _, err := e.IssueCertificate(context.Background(), IssueRequest{
+		CAID: inter.ID, CAPassphrase: []byte(pass), CSR: csr87,
+	}); !errors.Is(err, ErrConstraintViolation) {
+		t.Errorf("ML-DSA-87 CSR: want ErrConstraintViolation, got %v", err)
+	}
+
+	// store_key is meaningless when the server never sees the key.
+	csr := makeTestCSR(t, pqx509.Name{CommonName: "x"}, pqx509.SANs{DNSNames: []string{"x.example.com"}}, pqx509.MLDSA44)
+	if _, err := e.IssueCertificate(context.Background(), IssueRequest{
+		CAID: inter.ID, CAPassphrase: []byte(pass), CSR: csr, StoreKey: true,
+	}); !errors.Is(err, ErrConstraintViolation) {
+		t.Errorf("store_key with CSR: want ErrConstraintViolation, got %v", err)
+	}
+
+	// A CSR whose signature does not verify must never reach issuance.
+	tampered := *csr
+	tampered.Signature = bytes.Clone(csr.Signature)
+	tampered.Signature[0] ^= 0xFF
+	if _, err := e.IssueCertificate(context.Background(), IssueRequest{
+		CAID: inter.ID, CAPassphrase: []byte(pass), CSR: &tampered,
+	}); !errors.Is(err, pqx509.ErrCSRSignature) {
+		t.Errorf("tampered CSR: want ErrCSRSignature, got %v", err)
 	}
 }

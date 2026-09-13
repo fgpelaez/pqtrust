@@ -3,7 +3,6 @@ package ca
 import (
 	"context"
 	"crypto/rand"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"math/big"
@@ -277,6 +276,11 @@ type IssueRequest struct {
 	ValidityDays int
 	ExtKeyUsage  []pqx509.ExtKeyUsage
 	StoreKey     bool
+	// CSR, when set, issues against the request's subject public key: Subject,
+	// SANs and Algorithm come from the CSR and no key is generated or stored.
+	// The caller is responsible for handing over a parsed CSR; the engine
+	// re-verifies the self-signature before issuing.
+	CSR *pqx509.CertificateRequest
 }
 
 // IssueResult is a newly issued certificate.
@@ -304,9 +308,28 @@ func (e *Engine) IssueCertificate(ctx context.Context, req IssueRequest) (IssueR
 	if err != nil {
 		return IssueResult{}, err
 	}
+	if req.CSR != nil {
+		if err := req.CSR.CheckSignature(); err != nil {
+			return IssueResult{}, fmt.Errorf("ca: verifying CSR self-signature: %w", err)
+		}
+		if req.StoreKey {
+			return IssueResult{}, fmt.Errorf("%w: store_key is unavailable for CSR issuance; the server never sees the private key", ErrConstraintViolation)
+		}
+	}
 
+	subject, sans := req.Subject, req.SANs
 	alg := req.Algorithm
-	if alg == 0 {
+	var pub pqx509.PublicKey
+	if req.CSR != nil {
+		subject = req.CSR.Subject
+		sans = pqx509.SANs{
+			DNSNames:       req.CSR.DNSNames,
+			IPAddresses:    req.CSR.IPAddresses,
+			EmailAddresses: req.CSR.EmailAddresses,
+		}
+		alg = req.CSR.PublicKey.Algorithm
+		pub = req.CSR.PublicKey
+	} else if alg == 0 {
 		alg = pqx509.MLDSA44
 	}
 	if err := checkEndEntityAlgorithm(alg); err != nil {
@@ -319,7 +342,7 @@ func (e *Engine) IssueCertificate(ctx context.Context, req IssueRequest) (IssueR
 	if err := checkExtKeyUsage(ekus); err != nil {
 		return IssueResult{}, err
 	}
-	if req.Subject.CommonName == "" && req.SANs.Empty() {
+	if subject.CommonName == "" && sans.Empty() {
 		return IssueResult{}, fmt.Errorf("%w: a certificate needs a common name or at least one subject alternative name", ErrConstraintViolation)
 	}
 
@@ -347,9 +370,12 @@ func (e *Engine) IssueCertificate(ctx context.Context, req IssueRequest) (IssueR
 		return IssueResult{}, err
 	}
 
-	pub, priv, err := pqx509.GenerateKey(rand.Reader, alg)
-	if err != nil {
-		return IssueResult{}, err
+	var priv pqx509.PrivateKey
+	if req.CSR == nil {
+		pub, priv, err = pqx509.GenerateKey(rand.Reader, alg)
+		if err != nil {
+			return IssueResult{}, err
+		}
 	}
 	serial, err := pqx509.GenerateSerialNumber(rand.Reader)
 	if err != nil {
@@ -359,14 +385,14 @@ func (e *Engine) IssueCertificate(ctx context.Context, req IssueRequest) (IssueR
 	tmpl := &pqx509.Certificate{
 		SerialNumber:          serial,
 		SignatureAlgorithm:    caCert.PublicKey.Algorithm,
-		Subject:               req.Subject,
+		Subject:               subject,
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
 		BasicConstraints:      pqx509.BasicConstraints{IsCA: false},
 		BasicConstraintsValid: true,
 		KeyUsage:              pqx509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           ekus,
-		SANs:                  req.SANs,
+		SANs:                  sans,
 	}
 	der, err := pqx509.CreateCertificate(rand.Reader, tmpl, caCert, pub, signer)
 	if err != nil {
@@ -394,8 +420,8 @@ func (e *Engine) IssueCertificate(ctx context.Context, req IssueRequest) (IssueR
 	rec := store.Certificate{
 		Serial:    serialHex,
 		CAID:      caRec.ID,
-		SubjectDN: req.Subject.String(),
-		SANs:      sansString(req.SANs),
+		SubjectDN: subject.String(),
+		SANs:      sansString(sans),
 		Algorithm: alg.String(),
 		CertPEM:   certPEM,
 		KeyID:     storedKeyID,
@@ -420,8 +446,12 @@ func (e *Engine) IssueCertificate(ctx context.Context, req IssueRequest) (IssueR
 		ChainPEM:    certPEM + caResult.ChainPEM,
 		Certificate: cert,
 	}
-	if !req.StoreKey {
-		out.PrivateKeyPEM = string(EncodePrivateKeyPEM(priv))
+	if !req.StoreKey && req.CSR == nil {
+		keyPEM, err := pqx509.EncodePrivateKeyPEM(priv)
+		if err != nil {
+			return IssueResult{}, fmt.Errorf("ca: encoding private key: %w", err)
+		}
+		out.PrivateKeyPEM = string(keyPEM)
 	}
 	zeroSeed(priv)
 	return out, nil
@@ -454,16 +484,6 @@ func (e *Engine) Revoke(ctx context.Context, serial string, reason int) error {
 	}
 	e.invalidateCRL(rec.CAID)
 	return nil
-}
-
-// EncodePrivateKeyPEM wraps a private key seed in a pqtrust-specific PEM block.
-// PKCS#8 for ML-DSA arrives with the Phase 2 CSR work.
-func EncodePrivateKeyPEM(priv pqx509.PrivateKey) []byte {
-	return pem.EncodeToMemory(&pem.Block{
-		Type:    "PQTRUST ML-DSA PRIVATE KEY",
-		Headers: map[string]string{"Algorithm": priv.Algorithm.String()},
-		Bytes:   priv.Seed,
-	})
 }
 
 // SerialHex renders a serial number as lowercase hexadecimal.
