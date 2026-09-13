@@ -141,28 +141,16 @@ openssl verify -CAfile "$work/root.pem" -untrusted "$work/intermediate.pem" "$wo
 echo "== CSR: pqtrust generates, openssl verifies =="
 CGO_ENABLED=0 go run ./scripts/mkcsr -dir "$work"
 openssl req -verify -noout -in "$work/pqtrust-csr.pem" -config /dev/null
-
-# TEMPORARY DIAGNOSTIC (revert before merge): capture exit codes, stderr and
-# full output of the two failing checks instead of discarding them.
-set +e
-openssl req -in "$work/pqtrust-csr.pem" -noout -text -config /dev/null \
-	> "$work/reqtext.out" 2> "$work/reqtext.err"
-req_rc=$?
-openssl pkey -in "$work/pqtrust-key.pem" -noout -text \
-	> "$work/pkey.out" 2> "$work/pkey.err"
-pkey_text_rc=$?
-openssl pkey -in "$work/pqtrust-key.pem" -noout 2> "$work/pkeynoout.err"
-pkey_noout_rc=$?
-set -e
-echo "DIAG req -text rc=$req_rc stderr:"; cat "$work/reqtext.err"
-echo "DIAG req -text output (last 12 lines):"; tail -12 "$work/reqtext.out"
-echo "DIAG pkey -text rc=$pkey_text_rc stderr:"; cat "$work/pkey.err"
-echo "DIAG pkey -text output:"; cat "$work/pkey.out"
-echo "DIAG pkey -noout rc=$pkey_noout_rc stderr:"; cat "$work/pkeynoout.err"
-exit 1
-openssl req -in "$work/pqtrust-csr.pem" -noout -text -config /dev/null | grep -q 'ML-DSA' \
+# Output goes to files and greps read the files: piping streaming openssl
+# output into early-exiting consumers (grep -q, head -N) makes the producer
+# hit EPIPE mid-print and, under pipefail, fail the pipeline spuriously.
+openssl req -in "$work/pqtrust-csr.pem" -noout -text -config /dev/null > "$work/pqtrust-csr.txt" \
+	|| { echo "FAIL: openssl cannot print the pqtrust CSR" >&2; exit 1; }
+grep -q 'ML-DSA' "$work/pqtrust-csr.txt" \
 	|| { echo "FAIL: openssl did not report an ML-DSA algorithm for the pqtrust CSR" >&2; exit 1; }
-openssl pkey -in "$work/pqtrust-key.pem" -noout -text 2>/dev/null | head -2 \
+openssl pkey -in "$work/pqtrust-key.pem" -noout -text > "$work/pqtrust-key.txt" \
 	|| { echo "FAIL: openssl cannot read the PKCS#8 ML-DSA seed key" >&2; exit 1; }
+grep -q 'seed:' "$work/pqtrust-key.txt" \
+	|| { echo "FAIL: openssl did not report an ML-DSA seed key" >&2; exit 1; }
 
 echo "ALL INTEROP CHECKS PASSED"
