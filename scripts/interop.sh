@@ -113,4 +113,37 @@ openssl req -x509 -newkey ml-dsa-65 -keyout "$work/ossl.key" -out "$work/ossl.pe
 	-config /dev/null -addext "basicConstraints=critical,CA:TRUE"
 CGO_ENABLED=0 go run ./scripts/parsecert "$work/ossl.pem"
 
+echo "== CSR: openssl generates, pqtrust parses and verifies =="
+# -config /dev/null keeps req independent of openssl.cnf (CI installs no config).
+openssl req -new -newkey ml-dsa-44 -nodes -keyout "$work/ossl-csr.key" \
+	-out "$work/ossl-csr.pem" -subj "/CN=openssl-csr.example.com" -config /dev/null
+CGO_ENABLED=0 go run ./scripts/parsecsr "$work/ossl-csr.pem"
+
+echo "== issuing a certificate from an openssl CSR over the API =="
+INTER_ID="$inter_id" PASS="$pass" WORK="$work" python3 - <<'PY'
+import json, os
+env = os.environ
+csr = open(os.path.join(env["WORK"], "ossl-csr.pem")).read()
+body = {"ca_id": env["INTER_ID"], "passphrase": env["PASS"], "csr_pem": csr}
+open(os.path.join(env["WORK"], "csr-issue.json"), "w").write(json.dumps(body))
+PY
+api -X POST "$base/v1/certificates" -d @"$work/csr-issue.json" > "$work/csr-issued.json"
+WORK="$work" python3 - <<'PY'
+import json, os
+work = os.environ["WORK"]
+d = json.load(open(os.path.join(work, "csr-issued.json")))
+assert not d.get("private_key_pem"), "CSR issuance must not return a private key"
+assert d.get("certificate_pem"), "CSR issuance must return a certificate"
+open(os.path.join(work, "csr-leaf.pem"), "w").write(d["certificate_pem"])
+PY
+openssl verify -CAfile "$work/root.pem" -untrusted "$work/intermediate.pem" "$work/csr-leaf.pem"
+
+echo "== CSR: pqtrust generates, openssl verifies =="
+CGO_ENABLED=0 go run ./scripts/mkcsr -dir "$work"
+openssl req -verify -noout -in "$work/pqtrust-csr.pem"
+openssl req -in "$work/pqtrust-csr.pem" -noout -text | grep -q 'ML-DSA' \
+	|| { echo "FAIL: openssl did not report an ML-DSA algorithm for the pqtrust CSR" >&2; exit 1; }
+openssl pkey -in "$work/pqtrust-key.pem" -noout -text 2>/dev/null | head -2 \
+	|| { echo "FAIL: openssl cannot read the PKCS#8 ML-DSA seed key" >&2; exit 1; }
+
 echo "ALL INTEROP CHECKS PASSED"
