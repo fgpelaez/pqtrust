@@ -51,6 +51,8 @@ func problemForError(err error) (int, string, string) {
 		return http.StatusUnprocessableEntity, typeConstraintViolation, "Constraint violation"
 	case errors.Is(err, pqx509.ErrUnknownAlgorithm):
 		return http.StatusBadRequest, typeInvalidRequest, "Invalid request"
+	case errors.Is(err, pqx509.ErrInvalidCSR), errors.Is(err, pqx509.ErrCSRSignature):
+		return http.StatusBadRequest, typeInvalidRequest, "Invalid request"
 	default:
 		return http.StatusInternalServerError, typeInternal, "Internal server error"
 	}

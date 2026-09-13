@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/pem"
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
@@ -21,6 +23,7 @@ type issueRequest struct {
 	ValidityDays   int         `json:"validity_days"`
 	ExtKeyUsage    []string    `json:"ext_key_usage"`
 	StoreKey       bool        `json:"store_key"`
+	CSRPEM         string      `json:"csr_pem"`
 }
 
 type issueResponse struct {
@@ -50,10 +53,65 @@ type revokeRequest struct {
 	Reason int `json:"reason"`
 }
 
+// parseCSRPEM decodes a PEM-encoded PKCS#10 CSR and verifies its
+// self-signature. Any failure is a client-input problem.
+func parseCSRPEM(pemStr string) (*pqx509.CertificateRequest, error) {
+	block, _ := pem.Decode([]byte(pemStr))
+	if block == nil {
+		return nil, fmt.Errorf("csr_pem: no PEM block found")
+	}
+	if block.Type != "CERTIFICATE REQUEST" {
+		return nil, fmt.Errorf("csr_pem: PEM block type is %q, want %q", block.Type, "CERTIFICATE REQUEST")
+	}
+	csr, err := pqx509.ParseCertificateRequest(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	if err := csr.CheckSignature(); err != nil {
+		return nil, err
+	}
+	return csr, nil
+}
+
+// csrForbiddenField names the first request field that must be empty when
+// csr_pem is set, or "" when none violates the XOR.
+func csrForbiddenField(req issueRequest) string {
+	switch {
+	case !req.Subject.empty():
+		return "subject"
+	case len(req.DNSNames) > 0:
+		return "dns_names"
+	case len(req.IPAddresses) > 0:
+		return "ip_addresses"
+	case len(req.EmailAddresses) > 0:
+		return "email_addresses"
+	case req.Algorithm != "":
+		return "algorithm"
+	case req.StoreKey:
+		return "store_key"
+	default:
+		return ""
+	}
+}
+
 func (s *Server) handleIssueCertificate(w http.ResponseWriter, r *http.Request) {
 	var req issueRequest
 	if !decodeJSON(w, r, &req) {
 		return
+	}
+	var csr *pqx509.CertificateRequest
+	if req.CSRPEM != "" {
+		parsed, err := parseCSRPEM(req.CSRPEM)
+		if err != nil {
+			writeProblem(w, http.StatusBadRequest, typeInvalidRequest, "Invalid request", err.Error())
+			return
+		}
+		if field := csrForbiddenField(req); field != "" {
+			writeProblem(w, http.StatusBadRequest, typeInvalidRequest, "Invalid request",
+				fmt.Sprintf("field %q must be empty when csr_pem is set", field))
+			return
+		}
+		csr = parsed
 	}
 	engineReq := ca.IssueRequest{
 		CAID:         req.CAID,
@@ -61,6 +119,7 @@ func (s *Server) handleIssueCertificate(w http.ResponseWriter, r *http.Request) 
 		Subject:      req.Subject.toName(),
 		ValidityDays: req.ValidityDays,
 		StoreKey:     req.StoreKey,
+		CSR:          csr,
 	}
 	if req.Algorithm != "" {
 		alg, err := pqx509.ParseAlgorithm(req.Algorithm)

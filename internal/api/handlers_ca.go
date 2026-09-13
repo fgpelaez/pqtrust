@@ -28,6 +28,12 @@ func (s subjectJSON) toName() pqx509.Name {
 	}
 }
 
+func (s subjectJSON) empty() bool {
+	return s.CommonName == "" &&
+		len(s.Organization) == 0 && len(s.OrganizationalUnit) == 0 &&
+		len(s.Country) == 0 && len(s.Locality) == 0 && len(s.Province) == 0
+}
+
 type createCARequest struct {
 	Name             string      `json:"name"`
 	ParentID         *string     `json:"parent_id"`

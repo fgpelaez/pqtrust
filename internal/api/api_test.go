@@ -3,7 +3,9 @@ package api
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/json"
+	"encoding/pem"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -446,5 +448,154 @@ func TestTokenHelpers(t *testing.T) {
 	}
 	if HashToken(a) != HashToken(string([]byte(a))) {
 		t.Error("HashToken must be deterministic")
+	}
+}
+
+func makeCSRPEM(t *testing.T, subj pqx509.Name, sans pqx509.SANs) string {
+	t.Helper()
+	pub, priv, err := pqx509.GenerateKey(rand.Reader, pqx509.MLDSA44)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer, err := priv.Signer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	der, err := pqx509.CreateCertificateRequest(rand.Reader, subj, pub, signer, sans)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: der}))
+}
+
+func TestIssueFromCSRHappyPath(t *testing.T) {
+	h := newHarness(t)
+	rootID := h.createRoot(t)
+	interID := h.createIntermediate(t, rootID)
+
+	csrPEM := makeCSRPEM(t,
+		pqx509.Name{CommonName: "csr.example.com", Organization: []string{"pqtrust"}},
+		pqx509.SANs{DNSNames: []string{"csr.example.com"}})
+
+	rec := h.do(t, http.MethodPost, "/v1/certificates", map[string]any{
+		"ca_id":         interID,
+		"passphrase":    testPassphrase,
+		"csr_pem":       csrPEM,
+		"validity_days": 30,
+		"ext_key_usage": []string{"serverAuth", "clientAuth"},
+	}, nil)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("issue from CSR: %d %s", rec.Code, rec.Body.String())
+	}
+	var out struct {
+		Serial         string `json:"serial"`
+		CertificatePEM string `json:"certificate_pem"`
+		ChainPEM       string `json:"chain_pem"`
+		PrivateKeyPEM  string `json:"private_key_pem"`
+	}
+	decode(t, rec, &out)
+	if out.PrivateKeyPEM != "" {
+		t.Error("CSR issuance must not return a private key")
+	}
+	if out.CertificatePEM == "" || !strings.Contains(out.ChainPEM, out.CertificatePEM) {
+		t.Error("response must carry the certificate and its chain")
+	}
+	der, err := pqx509.DecodeCertificatePEM([]byte(out.CertificatePEM))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cert, err := pqx509.ParseCertificate(der)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cert.Subject.CommonName != "csr.example.com" {
+		t.Errorf("CN = %q", cert.Subject.CommonName)
+	}
+	if len(cert.SANs.DNSNames) != 1 || cert.SANs.DNSNames[0] != "csr.example.com" {
+		t.Errorf("DNSNames = %v", cert.SANs.DNSNames)
+	}
+	if len(cert.ExtKeyUsage) != 2 {
+		t.Errorf("EKU = %v, want serverAuth+clientAuth from the request", cert.ExtKeyUsage)
+	}
+}
+
+func TestIssueFromCSRRejectsForbiddenFields(t *testing.T) {
+	h := newHarness(t)
+	rootID := h.createRoot(t)
+	interID := h.createIntermediate(t, rootID)
+	csrPEM := makeCSRPEM(t, pqx509.Name{CommonName: "x.example.com"}, pqx509.SANs{DNSNames: []string{"x.example.com"}})
+
+	cases := []struct {
+		name  string
+		extra map[string]any
+	}{
+		{"subject", map[string]any{"subject": map[string]any{"common_name": "x"}}},
+		{"dns_names", map[string]any{"dns_names": []string{"x.example.com"}}},
+		{"ip_addresses", map[string]any{"ip_addresses": []string{"127.0.0.1"}}},
+		{"email_addresses", map[string]any{"email_addresses": []string{"a@b.c"}}},
+		{"algorithm", map[string]any{"algorithm": "ML-DSA-44"}},
+		{"store_key", map[string]any{"store_key": true}},
+	}
+	for _, tc := range cases {
+		body := map[string]any{
+			"ca_id":      interID,
+			"passphrase": testPassphrase,
+			"csr_pem":    csrPEM,
+		}
+		for k, v := range tc.extra {
+			body[k] = v
+		}
+		rec := h.do(t, http.MethodPost, "/v1/certificates", body, nil)
+		if rec.Code != http.StatusBadRequest {
+			t.Errorf("%s: got %d %s", tc.name, rec.Code, rec.Body.String())
+			continue
+		}
+		if !strings.Contains(rec.Body.String(), tc.name) {
+			t.Errorf("%s: problem detail must name the field, got %s", tc.name, rec.Body.String())
+		}
+	}
+}
+
+func TestIssueFromCSRTampered(t *testing.T) {
+	h := newHarness(t)
+	rootID := h.createRoot(t)
+	interID := h.createIntermediate(t, rootID)
+
+	csrPEM := makeCSRPEM(t, pqx509.Name{CommonName: "x.example.com"}, pqx509.SANs{DNSNames: []string{"x.example.com"}})
+	block, _ := pem.Decode([]byte(csrPEM))
+	block.Bytes[len(block.Bytes)-1] ^= 0xFF
+	tampered := string(pem.EncodeToMemory(block))
+
+	rec := h.do(t, http.MethodPost, "/v1/certificates", map[string]any{
+		"ca_id": interID, "passphrase": testPassphrase, "csr_pem": tampered,
+	}, nil)
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("tampered CSR: got %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestIssueKeygenReturnsPKCS8PEM(t *testing.T) {
+	h := newHarness(t)
+	rootID := h.createRoot(t)
+	interID := h.createIntermediate(t, rootID)
+
+	rec := h.do(t, http.MethodPost, "/v1/certificates", map[string]any{
+		"ca_id":      interID,
+		"passphrase": testPassphrase,
+		"subject":    map[string]any{"common_name": "keygen.example.com"},
+		"dns_names":  []string{"keygen.example.com"},
+	}, nil)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("keygen issue: %d %s", rec.Code, rec.Body.String())
+	}
+	var out struct {
+		PrivateKeyPEM string `json:"private_key_pem"`
+	}
+	decode(t, rec, &out)
+	if !strings.HasPrefix(out.PrivateKeyPEM, "-----BEGIN PRIVATE KEY-----") {
+		t.Fatalf("private_key_pem = %q, want PKCS#8 PEM", out.PrivateKeyPEM[:min(40, len(out.PrivateKeyPEM))])
+	}
+	if _, err := pqx509.DecodePrivateKeyPEM([]byte(out.PrivateKeyPEM)); err != nil {
+		t.Errorf("private_key_pem must decode: %v", err)
 	}
 }
