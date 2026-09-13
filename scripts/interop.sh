@@ -140,8 +140,8 @@ openssl verify -CAfile "$work/root.pem" -untrusted "$work/intermediate.pem" "$wo
 
 echo "== CSR: pqtrust generates, openssl verifies =="
 CGO_ENABLED=0 go run ./scripts/mkcsr -dir "$work"
-openssl req -verify -noout -in "$work/pqtrust-csr.pem"
-openssl req -in "$work/pqtrust-csr.pem" -noout -text | grep -q 'ML-DSA' \
+openssl req -verify -noout -in "$work/pqtrust-csr.pem" -config /dev/null
+openssl req -in "$work/pqtrust-csr.pem" -noout -text -config /dev/null | grep -q 'ML-DSA' \
 	|| { echo "FAIL: openssl did not report an ML-DSA algorithm for the pqtrust CSR" >&2; exit 1; }
 openssl pkey -in "$work/pqtrust-key.pem" -noout -text 2>/dev/null | head -2 \
 	|| { echo "FAIL: openssl cannot read the PKCS#8 ML-DSA seed key" >&2; exit 1; }
