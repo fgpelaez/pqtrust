@@ -141,6 +141,25 @@ openssl verify -CAfile "$work/root.pem" -untrusted "$work/intermediate.pem" "$wo
 echo "== CSR: pqtrust generates, openssl verifies =="
 CGO_ENABLED=0 go run ./scripts/mkcsr -dir "$work"
 openssl req -verify -noout -in "$work/pqtrust-csr.pem" -config /dev/null
+
+# TEMPORARY DIAGNOSTIC (revert before merge): capture exit codes, stderr and
+# full output of the two failing checks instead of discarding them.
+set +e
+openssl req -in "$work/pqtrust-csr.pem" -noout -text -config /dev/null \
+	> "$work/reqtext.out" 2> "$work/reqtext.err"
+req_rc=$?
+openssl pkey -in "$work/pqtrust-key.pem" -noout -text \
+	> "$work/pkey.out" 2> "$work/pkey.err"
+pkey_text_rc=$?
+openssl pkey -in "$work/pqtrust-key.pem" -noout 2> "$work/pkeynoout.err"
+pkey_noout_rc=$?
+set -e
+echo "DIAG req -text rc=$req_rc stderr:"; cat "$work/reqtext.err"
+echo "DIAG req -text output (last 12 lines):"; tail -12 "$work/reqtext.out"
+echo "DIAG pkey -text rc=$pkey_text_rc stderr:"; cat "$work/pkey.err"
+echo "DIAG pkey -text output:"; cat "$work/pkey.out"
+echo "DIAG pkey -noout rc=$pkey_noout_rc stderr:"; cat "$work/pkeynoout.err"
+exit 1
 openssl req -in "$work/pqtrust-csr.pem" -noout -text -config /dev/null | grep -q 'ML-DSA' \
 	|| { echo "FAIL: openssl did not report an ML-DSA algorithm for the pqtrust CSR" >&2; exit 1; }
 openssl pkey -in "$work/pqtrust-key.pem" -noout -text 2>/dev/null | head -2 \
