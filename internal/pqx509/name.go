@@ -264,7 +264,9 @@ func parseDirectoryString(rv asn1.RawValue) (string, error) {
 	}
 }
 
-// decodeBMPString converts a UTF-16BE BMPString to a Go string.
+// decodeBMPString converts a UTF-16BE BMPString to a Go string. Unpaired
+// UTF-16 surrogates are malformed and rejected; a well-formed surrogate pair
+// is accepted and decodes to an astral rune.
 func decodeBMPString(b []byte) (string, error) {
 	if len(b)%2 != 0 {
 		return "", fmt.Errorf("%w: BMPString is %d bytes, not a multiple of 2", ErrMalformedDER, len(b))
@@ -272,6 +274,16 @@ func decodeBMPString(b []byte) (string, error) {
 	units := make([]uint16, len(b)/2)
 	for i := range units {
 		units[i] = uint16(b[2*i])<<8 | uint16(b[2*i+1]) //nolint:gosec // G115: two bytes assembled into uint16
+	}
+	isLead := func(u uint16) bool { return u >= 0xD800 && u <= 0xDBFF }
+	isTrail := func(u uint16) bool { return u >= 0xDC00 && u <= 0xDFFF }
+	for i, u := range units {
+		if isLead(u) && (i+1 == len(units) || !isTrail(units[i+1])) {
+			return "", fmt.Errorf("%w: BMPString leading surrogate at unit %d is unpaired", ErrMalformedDER, i)
+		}
+		if isTrail(u) && (i == 0 || !isLead(units[i-1])) {
+			return "", fmt.Errorf("%w: BMPString trailing surrogate at unit %d is unpaired", ErrMalformedDER, i)
+		}
 	}
 	return string(utf16.Decode(units)), nil
 }

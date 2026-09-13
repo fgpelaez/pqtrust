@@ -6,6 +6,7 @@ import (
 	"encoding/asn1"
 	"errors"
 	"net"
+	"reflect"
 	"testing"
 )
 
@@ -253,6 +254,145 @@ func TestCSRExtensionRequestPolicy(t *testing.T) {
 	}
 	if _, err := ParseCertificateRequest(der2); !errorsIs(err, ErrInvalidCSR) {
 		t.Errorf("duplicate extensionRequest: want ErrInvalidCSR, got %v", err)
+	}
+}
+
+func TestCSRCreateParseRoundTripEmptyAttributes(t *testing.T) {
+	// Without SANs the attribute set is the empty A0 00 — the shape
+	// `openssl req -new -subj ... -config /dev/null` emits by default.
+	subj := Name{CommonName: "noattrs.example.com", Organization: []string{"pqtrust"}}
+	der, _ := makeCSR(t, subj, SANs{})
+
+	csr, err := ParseCertificateRequest(der)
+	if err != nil {
+		t.Fatalf("ParseCertificateRequest: %v", err)
+	}
+	if !bytes.HasSuffix(csr.RawTBSCSR, []byte{0xA0, 0x00}) {
+		t.Errorf("CRI must end with the empty attribute set A0 00, got % x", csr.RawTBSCSR[len(csr.RawTBSCSR)-2:])
+	}
+	if !reflect.DeepEqual(csr.Subject, subj) {
+		t.Errorf("Subject = %+v, want %+v", csr.Subject, subj)
+	}
+	if len(csr.DNSNames) != 0 || len(csr.IPAddresses) != 0 || len(csr.EmailAddresses) != 0 {
+		t.Errorf("SANs must be empty, got %v %v %v", csr.DNSNames, csr.IPAddresses, csr.EmailAddresses)
+	}
+	if err := csr.CheckSignature(); err != nil {
+		t.Errorf("CheckSignature: %v", err)
+	}
+}
+
+func TestCSRCreateParseRoundTripNonASCIISubject(t *testing.T) {
+	// A non-ASCII DN encodes the CN as UTF8String and must round-trip losslessly.
+	subj := Name{CommonName: "pépite.example.com", Organization: []string{"pqtrust"}}
+	sans := SANs{DNSNames: []string{"www.example.com"}}
+	der, _ := makeCSR(t, subj, sans)
+
+	csr, err := ParseCertificateRequest(der)
+	if err != nil {
+		t.Fatalf("ParseCertificateRequest: %v", err)
+	}
+	if !reflect.DeepEqual(csr.Subject, subj) {
+		t.Errorf("Subject = %+v, want %+v", csr.Subject, subj)
+	}
+	if len(csr.DNSNames) != 1 || csr.DNSNames[0] != "www.example.com" {
+		t.Errorf("DNSNames = %v, want [www.example.com]", csr.DNSNames)
+	}
+	if err := csr.CheckSignature(); err != nil {
+		t.Errorf("CheckSignature: %v", err)
+	}
+}
+
+func TestCSRSansFromCSRAttributes(t *testing.T) {
+	pub, priv, err := GenerateKey(rand.Reader, MLDSA44)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer, err := priv.Signer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	subjectDER, err := (Name{CommonName: "attrs.example.com"}).ToRDNSequence()
+	if err != nil {
+		t.Fatal(err)
+	}
+	spkiDER, err := MarshalPKIXPublicKey(pub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zero, err := asn1.Marshal(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	marshal := func(v any) []byte {
+		der, err := asn1.Marshal(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return der
+	}
+	sanDER, err := marshalSANs(SANs{DNSNames: []string{"attrs.example.com"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ekuDER, err := marshalExtKeyUsage([]ExtKeyUsage{ExtKeyUsageClientAuth})
+	if err != nil {
+		t.Fatal(err)
+	}
+	sanExts := marshal([]extension{{ID: oidExtSubjectAltName, Value: sanDER}})
+	ekuExts := marshal([]extension{{ID: oidExtExtendedKeyUsage, Value: ekuDER}})
+	signCSR := func(attrs []byte) []byte {
+		cri := marshalSequence(concatDER(zero, subjectDER, spkiDER, attrs))
+		sig, err := signer.Sign(rand.Reader, cri)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return marshal(certificationRequestDER{
+			CRI:                asn1.RawValue{FullBytes: cri},
+			SignatureAlgorithm: algorithmIdentifier{Algorithm: MLDSA44.OID()},
+			SignatureValue:     asn1.BitString{Bytes: sig, BitLength: len(sig) * 8},
+		})
+	}
+	wrapAttrs := func(attr ...[]byte) []byte {
+		content := concatDER(attr...)
+		return append([]byte{0xA0}, append(marshalLength(len(content)), content...)...)
+	}
+
+	// An extensionRequest attribute carrying two values is ambiguous.
+	twoValues := wrapAttrs(marshal(csrAttributeDER{
+		Type:   oidExtensionRequest,
+		Values: []asn1.RawValue{{FullBytes: sanExts}, {FullBytes: ekuExts}},
+	}))
+	if _, err := ParseCertificateRequest(signCSR(twoValues)); !errorsIs(err, ErrInvalidCSR) {
+		t.Errorf("extensionRequest with two values: want ErrInvalidCSR, got %v", err)
+	}
+
+	// Two subjectAltName extensions inside one extensionRequest.
+	dupSANs := marshal([]extension{
+		{ID: oidExtSubjectAltName, Value: sanDER},
+		{ID: oidExtSubjectAltName, Value: sanDER},
+	})
+	dupSAN := wrapAttrs(marshal(csrAttributeDER{
+		Type:   oidExtensionRequest,
+		Values: []asn1.RawValue{{FullBytes: dupSANs}},
+	}))
+	if _, err := ParseCertificateRequest(signCSR(dupSAN)); !errorsIs(err, ErrInvalidCSR) {
+		t.Errorf("duplicate subjectAltName in one extensionRequest: want ErrInvalidCSR, got %v", err)
+	}
+
+	// A non-extensionRequest attribute (challengePassword) is parsed and ignored.
+	challenge := wrapAttrs(marshal(csrAttributeDER{
+		Type:   asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 7},
+		Values: []asn1.RawValue{{FullBytes: marshal("hush")}},
+	}))
+	csr, err := ParseCertificateRequest(signCSR(challenge))
+	if err != nil {
+		t.Fatalf("challengePassword attribute must be ignored, got %v", err)
+	}
+	if len(csr.DNSNames) != 0 || len(csr.IPAddresses) != 0 || len(csr.EmailAddresses) != 0 {
+		t.Errorf("SANs must stay empty, got %v %v %v", csr.DNSNames, csr.IPAddresses, csr.EmailAddresses)
+	}
+	if err := csr.CheckSignature(); err != nil {
+		t.Errorf("CheckSignature: %v", err)
 	}
 }
 

@@ -262,6 +262,9 @@ func TestParseNameRejectsBrokenBMPAndUniversal(t *testing.T) {
 		der  []byte
 	}{
 		{"odd BMPString", build(asn1.TagBMPString, []byte{0x00, 'a', 0x00})},
+		{"BMPString unpaired lead surrogate", build(asn1.TagBMPString, []byte{0xD8, 0x00})},
+		{"BMPString lone trailing surrogate", build(asn1.TagBMPString, []byte{0xDC, 0x00})},
+		{"BMPString lead followed by non-trailing", build(asn1.TagBMPString, []byte{0xD8, 0x00, 0x00, 0x41})},
 		{"UniversalString not multiple of 4", build(tagUniversalString, []byte{0x00, 0x00, 0x00})},
 		{"UniversalString surrogate", build(tagUniversalString, []byte{0x00, 0x00, 0xD8, 0x00})},
 	}
@@ -269,6 +272,26 @@ func TestParseNameRejectsBrokenBMPAndUniversal(t *testing.T) {
 		if _, err := ParseName(tc.der); !errors.Is(err, ErrMalformedDER) {
 			t.Errorf("%s: want ErrMalformedDER, got %v", tc.name, err)
 		}
+	}
+}
+
+func TestParseNameAcceptsBMPStringSurrogatePair(t *testing.T) {
+	// A well-formed UTF-16 surrogate pair (D8 00 DC 00) decodes to the astral
+	// rune U+10000; only unpaired surrogates are malformed.
+	build := func(tag byte, content []byte) []byte {
+		oidDER, err := asn1.Marshal(oidCommonName)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rv := append([]byte{tag}, append(marshalLength(len(content)), content...)...)
+		return marshalSequence(marshalSet(marshalSequence(append(oidDER, rv...))))
+	}
+	n, err := ParseName(build(asn1.TagBMPString, []byte{0xD8, 0x00, 0xDC, 0x00}))
+	if err != nil {
+		t.Fatalf("ParseName must accept a surrogate pair: %v", err)
+	}
+	if n.CommonName != "\U00010000" {
+		t.Errorf("CommonName = %q, want U+10000", n.CommonName)
 	}
 }
 

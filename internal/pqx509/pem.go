@@ -68,6 +68,7 @@ func DecodePrivateKeyPEM(pemBytes []byte) (PrivateKey, error) {
 		}
 		return PrivateKey{Algorithm: alg, Seed: bytes.Clone(block.Bytes)}, nil
 	default:
-		return PrivateKey{}, fmt.Errorf("pqx509: PEM block type is %q, want %q", block.Type, pemTypePrivateKey)
+		return PrivateKey{}, fmt.Errorf("pqx509: PEM block type is %q, want %q or %q",
+			block.Type, pemTypePrivateKey, pemTypeLegacyKey)
 	}
 }

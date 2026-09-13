@@ -158,7 +158,12 @@ func TestPrivateKeyPEM(t *testing.T) {
 	}
 
 	certStyle := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: pemBytes})
-	if _, err := DecodePrivateKeyPEM(certStyle); err == nil {
-		t.Error("CERTIFICATE-typed block must be rejected")
+	_, err = DecodePrivateKeyPEM(certStyle)
+	if err == nil {
+		t.Fatal("CERTIFICATE-typed block must be rejected")
+	}
+	if msg := err.Error(); !strings.Contains(msg, pemTypePrivateKey) || !strings.Contains(msg, pemTypeLegacyKey) {
+		t.Errorf("rejection must name both accepted block types %q and %q, got %q",
+			pemTypePrivateKey, pemTypeLegacyKey, msg)
 	}
 }
