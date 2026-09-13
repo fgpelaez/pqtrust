@@ -3,7 +3,9 @@ package pqx509
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/asn1"
 	"encoding/pem"
+	"errors"
 	"math/big"
 	"strings"
 	"testing"
@@ -51,5 +53,112 @@ func TestEncodeCRLPEM(t *testing.T) {
 	}
 	if _, err := ParseRevocationList(block.Bytes); err != nil {
 		t.Fatalf("PEM-wrapped CRL did not parse: %v", err)
+	}
+}
+
+func TestPKCS8RoundTrip(t *testing.T) {
+	for _, alg := range []Algorithm{MLDSA44, MLDSA65, MLDSA87} {
+		pub, priv, err := GenerateKey(rand.Reader, alg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		der, err := MarshalPKCS8PrivateKey(priv)
+		if err != nil {
+			t.Fatalf("%v: marshal: %v", alg, err)
+		}
+		back, err := ParsePKCS8PrivateKey(der)
+		if err != nil {
+			t.Fatalf("%v: parse: %v", alg, err)
+		}
+		if back.Algorithm != priv.Algorithm || !bytes.Equal(back.Seed, priv.Seed) {
+			t.Fatalf("%v: round-trip mismatch", alg)
+		}
+		signer, err := back.Signer()
+		if err != nil {
+			t.Fatalf("%v: signer: %v", alg, err)
+		}
+		if !bytes.Equal(signer.Public().Bytes, pub.Bytes) {
+			t.Errorf("%v: seed expands to a different public key", alg)
+		}
+	}
+}
+
+func TestParsePKCS8Rejects(t *testing.T) {
+	_, priv, err := GenerateKey(rand.Reader, MLDSA44)
+	if err != nil {
+		t.Fatal(err)
+	}
+	good, err := MarshalPKCS8PrivateKey(priv)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var k oneAsymmetricKey
+	if _, err := asn1.Unmarshal(good, &k); err != nil {
+		t.Fatal(err)
+	}
+
+	k1 := k
+	k1.Version = 1
+	badVersion, _ := asn1.Marshal(k1)
+	if _, err := ParsePKCS8PrivateKey(badVersion); !errors.Is(err, ErrMalformedDER) {
+		t.Errorf("version 1: want ErrMalformedDER, got %v", err)
+	}
+
+	k2 := k
+	k2.Algorithm.Parameters = asn1.RawValue{FullBytes: []byte{0x05, 0x00}}
+	badParams, _ := asn1.Marshal(k2)
+	if _, err := ParsePKCS8PrivateKey(badParams); !errors.Is(err, ErrMalformedDER) {
+		t.Errorf("NULL parameters: want ErrMalformedDER, got %v", err)
+	}
+
+	k3 := k
+	k3.PrivateKey = k3.PrivateKey[:31]
+	badSeed, _ := asn1.Marshal(k3)
+	if _, err := ParsePKCS8PrivateKey(badSeed); !errors.Is(err, ErrInvalidKeySize) {
+		t.Errorf("31-byte seed: want ErrInvalidKeySize, got %v", err)
+	}
+
+	if _, err := ParsePKCS8PrivateKey(append(good, 0x00)); !errors.Is(err, ErrTrailingData) {
+		t.Errorf("trailing byte: want ErrTrailingData, got %v", err)
+	}
+}
+
+func TestPrivateKeyPEM(t *testing.T) {
+	_, priv, err := GenerateKey(rand.Reader, MLDSA65)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pemBytes, err := EncodePrivateKeyPEM(priv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(pemBytes), "-----BEGIN PRIVATE KEY-----") {
+		t.Fatalf("unexpected PEM: %q", pemBytes[:40])
+	}
+	back, err := DecodePrivateKeyPEM(pemBytes)
+	if err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if back.Algorithm != MLDSA65 || !bytes.Equal(back.Seed, priv.Seed) {
+		t.Error("PEM round-trip mismatch")
+	}
+
+	legacy := pem.EncodeToMemory(&pem.Block{
+		Type:    "PQTRUST ML-DSA PRIVATE KEY",
+		Headers: map[string]string{"Algorithm": "ML-DSA-65"},
+		Bytes:   priv.Seed,
+	})
+	back, err = DecodePrivateKeyPEM(legacy)
+	if err != nil {
+		t.Fatalf("legacy decode: %v", err)
+	}
+	if back.Algorithm != MLDSA65 || !bytes.Equal(back.Seed, priv.Seed) {
+		t.Error("legacy PEM round-trip mismatch")
+	}
+
+	certStyle := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: pemBytes})
+	if _, err := DecodePrivateKeyPEM(certStyle); err == nil {
+		t.Error("CERTIFICATE-typed block must be rejected")
 	}
 }
