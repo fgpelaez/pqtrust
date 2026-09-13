@@ -55,7 +55,7 @@ Responsibility per package (see the plan for the full table):
 
 | Path | Responsibility |
 |---|---|
-| `internal/pqx509` | DER/CMS layer: ML-DSA algorithms, keys, certificate, CRL, extensions, verify, PEM |
+| `internal/pqx509` | Pure-Go DER layer: ML-DSA algorithms, keys, PKCS#8, PKCS#10 CSRs, certificates, CRLs, extensions, verify, PEM |
 | `internal/keystore` | `Backend` interface, Argon2id+AES-256-GCM sealed envelope, filesystem backend |
 | `internal/store` | SQLite persistence with embedded migrations for CAs, certificates and tokens |
 | `internal/config` | YAML configuration with environment overrides and validation |

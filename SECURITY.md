@@ -3,7 +3,8 @@
 ## Not yet production
 
 pqtrust has **not been audited**. It is a Phase 1 implementation of a
-post-quantum certificate authority and the maintainers make no claims about
+post-quantum certificate authority (plus the first Phase 2 slice: PKCS#10 CSR
+enrollment and PKCS#8 export) and the maintainers make no claims about
 its fitness as a trust anchor. Do not use it to issue certificates you cannot
 afford to reissue.
 
@@ -69,7 +70,7 @@ procedures and not features:
   and a sealed-key file without its row in the database is opaque garbage.
   Test the restore by booting a fresh daemon against the backup.
 
-## Out of scope for Phase 1
+## Deliberately out of scope
 
 These are intentionally absent and should not be reported as bugs:
 

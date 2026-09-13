@@ -1,6 +1,8 @@
 # LIMITATIONS
 
-pqtrust Phase 1 is honest about what it does and does not do. This file lists
+pqtrust is honest about what it does and does not do. The code on `main` is
+Phase 1 plus the first Phase 2 slice (PKCS#10 CSR enrollment, PKCS#8 export,
+DN completeness). This file lists
 the things a reader needs to know before depending on the daemon for anything
 beyond a five-minute demo. Every entry has a one-line "what a production
 deployment needs" note where relevant.
@@ -18,7 +20,7 @@ deployment needs" note where relevant.
   remains readable but is no longer written.
 - **Stored end-entity keys** (`store_key: true`) are sealed with the same
   passphrase used to unlock the issuing CA. Separate per-key passphrases are
-  a Phase 2 item.
+  a separate bounded task (explicitly out of the Phase 2 CSR scope).
 - **Path validation** implements signatures, validity, name chaining,
   basicConstraints and CA keyUsage only; revocation is checked through a
   separate `CheckRevocation` hook, not inside `Verify`.
@@ -41,10 +43,10 @@ deployment needs" note where relevant.
 - **No RA, approval workflow, ACME, EST or SCEP**; the API issues
   immediately on an authenticated request. → commercial tier.
 - **No Certificate Transparency**, no OCSP responder. CRLs only.
-- **No CRLDistributionPoints extension is emitted** in Phase 1, so relying
-  parties must fetch CRLs out of band from `GET /v1/ca/{id}/crl`. What a
-  production deployment needs: either emit the extension with the CA's CRL
-  URL, or stand up a dedicated CRL host.
+- **No CRLDistributionPoints extension is emitted** (a separate small task),
+  so relying parties must fetch CRLs out of band from
+  `GET /v1/ca/{id}/crl`. What a production deployment needs: either emit the
+  extension with the CA's CRL URL, or stand up a dedicated CRL host.
 - **Single node, single SQLite file**; no clustering, no replication, no
   multi-tenancy. → commercial tier.
 - **No audit log and no metrics**; issuance and revocation events are the
@@ -70,8 +72,9 @@ deployment needs" note where relevant.
 
 ## Open vs. commercial tier
 
-The split mirrors spec §11.1; nothing in Phase 1 forecloses the commercial
-path.
+The split mirrors spec §11.1 — where each capability is planned to land —
+and nothing in the open codebase forecloses the commercial path. The
+`pqtrust` CLI in the open column is still pending (later in Phase 2).
 
 | Open (AGPL) | Future commercial tier |
 |---|---|
