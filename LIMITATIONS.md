@@ -12,13 +12,10 @@ deployment needs" note where relevant.
   is hybrid post-quantum (X25519MLKEM768), which is what defeats
   harvest-now-decrypt-later; the listener cert is regenerated on every
   startup. Revisited in Phase 2.
-- **No CSR flow yet**: keys are generated server-side. PKCS#10 arrives in
-  Phase 2.
-- **Private-key PEM format is pqtrust-specific.** The format is
-  `-----BEGIN PQTRUST ML-DSA PRIVATE KEY-----`, the body is a raw 32-byte
-  seed, and the header carries `Algorithm: ML-DSA-XX`. PKCS#8 encoding for
-  ML-DSA lands with the Phase 2 CSR work; until then, only `pqx509` can read
-  these files.
+- **Private keys are exported as PKCS#8** (`-----BEGIN PRIVATE KEY-----`)
+  carrying the raw 32-byte ML-DSA seed per
+  `draft-ietf-lamps-dilithium-certificates`. The Phase 1 pqtrust-specific PEM
+  remains readable but is no longer written.
 - **Stored end-entity keys** (`store_key: true`) are sealed with the same
   passphrase used to unlock the issuing CA. Separate per-key passphrases are
   a Phase 2 item.
@@ -32,19 +29,10 @@ deployment needs" note where relevant.
 
 ## Distinguished names
 
-- **`parseDirectoryString` accepts IA5String/T61String but rejects
-  BMPString/UniversalString**, so a third-party certificate whose
-  distinguished name uses those attribute types is hard-rejected during
-  parsing. Most real-world DNs are UTF8String/PrintableString, so this
-  rarely bites, but a legacy cert with BMPString will fail to load.
-  What a production deployment needs: extend `parseDirectoryString` to
-  cover `asn1.TagBMPString` and `asn1.TagUniversalString` (Phase 2).
-- **`ParseNameString` splits on `,` without un-escaping**, so a human-typed
-  `CN=Smith, John` mis-parses: the `,` becomes a separator and the second
-  half lands in the wrong attribute. The `String()` round-trip is symmetric
-  for values produced by pqtrust, because the encoder escapes `,` itself;
-  this is purely a human-input hazard. What a production deployment needs:
-  parse RFC 4514 escapes (`\,`, `\=`, etc.) before splitting.
+- **Two RFC 4514 forms are rejected**: hex-encoded attribute values (a leading
+  unescaped `#`) and multi-valued RDNs (an unescaped `+`), because pqtrust's
+  `Name` model cannot represent them. Everything else — `\,`, `\+`, hexpair
+  escapes — round-trips, and BMPString/UniversalString attributes now parse.
 
 ## Operations and deployment
 
@@ -72,6 +60,9 @@ deployment needs" note where relevant.
 
 ## API surface
 
+- **extensionRequest in CSRs: only subjectAltName is honored.** Every other
+  requested extension (EKU, basicConstraints, anything unknown) is ignored and
+  never reaches the certificate; EKU comes from the request body.
 - **404 and 405 responses** from unmatched routes are plain text from
   `http.ServeMux`, not `application/problem+json` like the rest of the
   API. What a production deployment needs: wrap the mux with a small

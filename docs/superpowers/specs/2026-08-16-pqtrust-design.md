@@ -260,7 +260,7 @@ audit logging and metering.
 | Phase | Scope | Exit criteria |
 |---|---|---|
 | **1** (weeks 1–3) | `pqx509` (ML-DSA), hierarchy, `store`, `keystore`, REST API, CRL, server-side keygen | OpenSSL 3.5 verifies a pqtrust-issued chain in CI; full issuance/revocation demo via curl |
-| **2** (weeks 4–6) | PKCS#10 CSR flow, `pqtrust` CLI, SLH-DSA, composite (hybrid) certs per `draft-ietf-lamps-pq-composite-sigs`, Dockerfile + compose | End-to-end demo: CSR → cert → hybrid-TLS handshake |
+| **2** (weeks 4–6) | PKCS#10 CSR flow + PKCS#8 export (delivered 2026-09-12), `pqtrust` CLI, SLH-DSA, composite (hybrid) certs per `draft-ietf-lamps-pq-composite-sigs`, Dockerfile + compose | End-to-end demo: CSR → cert → hybrid-TLS handshake |
 | **3** (stretch) | Web dashboard, OCSP responder, Prometheus metrics, public write-up | — |
 
 ## 13. Success criteria

@@ -23,8 +23,9 @@ of pqtrust is to give engineers a small, honest daemon they can run on a laptop
 to issue ML-DSA hierarchies and to give protocol designers something they can
 interoperate with.
 
-This is Phase 1 of three. Phase 2 adds PKCS#10 CSR flow, the `pqtrust` CLI,
-SLH-DSA and composite (hybrid) certificates per
+This is Phase 1 of three, plus the first Phase 2 slice: PKCS#10 CSR
+enrollment and PKCS#8 key export are in. The rest of Phase 2 adds the
+`pqtrust` CLI, SLH-DSA and composite (hybrid) certificates per
 `draft-ietf-lamps-pq-composite-sigs`. Phase 3 is the web dashboard and OCSP
 responder. See [`LIMITATIONS.md`](./LIMITATIONS.md) for what is intentionally
 not built yet.
@@ -65,7 +66,7 @@ Responsibility per package (see the plan for the full table):
 ## Five-minute demo
 
 The demo runs against a fresh state in `/tmp/pqtrust`, requires `make`, `curl`,
-`jq` and `openssl` (OpenSSL 3.5+ for step 7), and ends with a real
+`jq` and `openssl` (OpenSSL 3.5+ for steps 6b and 7), and ends with a real
 ML-DSA-signed certificate on disk.
 
 ```bash
@@ -108,6 +109,18 @@ curl -sk -H "Authorization: Bearer $PQTRUST_TOKEN" -H 'Content-Type: application
 
 jq -r .chain_pem /tmp/pqtrust/issued.json > /tmp/pqtrust/chain.pem
 
+# 6b. Enroll a client-held key via a PKCS#10 CSR (OpenSSL 3.5+ generates it)
+openssl req -new -newkey ml-dsa-44 -nodes -keyout /tmp/pqtrust/client.key \
+  -out /tmp/pqtrust/client.csr -subj "/CN=client.example.com" -config /dev/null
+curl -sk -H "Authorization: Bearer $PQTRUST_TOKEN" -H 'Content-Type: application/json' \
+  -X POST https://127.0.0.1:8443/v1/certificates -d "{
+    \"ca_id\":\"$INTER\",\"passphrase\":\"$PASS\",
+    \"csr_pem\":\"$(awk '{printf "%s\\n", $0}' /tmp/pqtrust/client.csr)\"}" \
+  > /tmp/pqtrust/enrolled.json
+
+jq -r .certificate_pem /tmp/pqtrust/enrolled.json > /tmp/pqtrust/enrolled.pem
+openssl verify -CAfile /tmp/pqtrust/chain.pem /tmp/pqtrust/enrolled.pem
+
 # 7. Verify with OpenSSL 3.5+ — third-party proof, not our own code
 openssl x509 -in /tmp/pqtrust/chain.pem -noout -text | head -15
 ```
@@ -116,8 +129,8 @@ The demo passes when `jq -r .id` returns the CA IDs in step 5 and
 `/tmp/pqtrust/chain.pem` contains three `BEGIN CERTIFICATE` blocks in step 6.
 Step 7 is informational: it shows that a third-party parser (OpenSSL 3.5+)
 also reads pqtrust's ML-DSA DER. On systems whose `openssl` is older than 3.5,
-step 7 will fail because the local OpenSSL does not understand ML-DSA OIDs; the
-demonstration is correct for the documented environment.
+steps 6b and 7 will fail because the local OpenSSL does not understand
+ML-DSA OIDs; the demonstration is correct for the documented environment.
 
 ## API reference
 
@@ -131,15 +144,17 @@ bearer token in `Authorization`, except `GET /v1/health`.
 | `GET` | `/v1/ca` | List every CA | — | `200` with `{cas: [...]}` |
 | `GET` | `/v1/ca/{id}` | Fetch a single CA | — | `200` with the same shape as `POST /v1/ca` |
 | `GET` | `/v1/ca/{id}/crl` | Fetch the CA's CRL | `X-PQTrust-Passphrase` header; `Accept: application/x-pem-file` to get PEM | DER or PEM CRL |
-| `POST` | `/v1/certificates` | Issue an end-entity certificate (server-generated key) | `{ca_id, passphrase, subject, dns_names?, ip_addresses?, email_addresses?, algorithm?, validity_days?, ext_key_usage?, store_key?}` | `201` with `{serial, certificate_pem, chain_pem, private_key_pem?, not_before, not_after}` |
+| `POST` | `/v1/certificates` | Issue an end-entity certificate (server-generated key or PKCS#10 CSR) | `{ca_id, passphrase, subject, dns_names?, ip_addresses?, email_addresses?, algorithm?, validity_days?, ext_key_usage?, store_key?}` or `{ca_id, passphrase, csr_pem, validity_days?, ext_key_usage?}` | `201` with `{serial, certificate_pem, chain_pem, private_key_pem?, not_before, not_after}` |
 | `GET` | `/v1/certificates/{serial}` | Fetch a certificate by serial | — | `200` with `{serial, ca_id, subject_dn, sans, algorithm, status, certificate_pem, revoked_at?, ...}` |
 | `POST` | `/v1/certificates/{serial}/revoke` | Revoke a certificate | `{reason: 0..10}` (RFC 5280 reason code) | `200` with `{serial, status:"revoked", revoked_at, reason}` |
 
 Subjects accept: `common_name`, `organization`, `organizational_unit`,
 `country`, `locality`, `province` (string or array of strings). The `algorithm`
-field accepts `ML-DSA-44`, `ML-DSA-65`, `ML-DSA-87`. Issuing keys are
-generated server-side; the private-key PEM uses a pqtrust-specific format
-documented in [`LIMITATIONS.md`](./LIMITATIONS.md).
+field accepts `ML-DSA-44`, `ML-DSA-65`, `ML-DSA-87`. Keys are generated
+server-side by default and returned once as PKCS#8 PEM
+(raw ML-DSA seed per `draft-ietf-lamps-dilithium-certificates`). With
+`csr_pem`, the client keeps its own key — subject and SANs come from the CSR,
+EKU and validity from the request — and no private key is returned.
 
 ## Configuration
 
