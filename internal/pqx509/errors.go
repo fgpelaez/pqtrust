@@ -32,4 +32,8 @@ var (
 	ErrKeyUsageNotPermitted = errors.New("pqx509: key usage does not permit this operation")
 	// ErrRevoked reports a certificate rejected by a revocation check.
 	ErrRevoked = errors.New("pqx509: certificate has been revoked")
+	// ErrInvalidCSR reports a PKCS#10 CSR that is structurally invalid.
+	ErrInvalidCSR = errors.New("pqx509: invalid certificate request")
+	// ErrCSRSignature reports a CSR whose self-signature does not verify.
+	ErrCSRSignature = errors.New("pqx509: CSR self-signature verification failed")
 )
