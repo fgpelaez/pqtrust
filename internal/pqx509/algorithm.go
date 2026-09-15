@@ -17,16 +17,18 @@ const (
 )
 
 type algorithmInfo struct {
-	name    string
-	oid     asn1.ObjectIdentifier
-	pkSize  int
-	sigSize int
+	name     string
+	oid      asn1.ObjectIdentifier
+	pkSize   int
+	sigSize  int
+	seedSize int
+	family   algorithmFamily
 }
 
 var algorithms = map[Algorithm]algorithmInfo{
-	MLDSA44: {"ML-DSA-44", asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 17}, 1312, 2420},
-	MLDSA65: {"ML-DSA-65", asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 18}, 1952, 3309},
-	MLDSA87: {"ML-DSA-87", asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 19}, 2592, 4627},
+	MLDSA44: {"ML-DSA-44", asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 17}, 1312, 2420, 32, mldsaFamily{}},
+	MLDSA65: {"ML-DSA-65", asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 18}, 1952, 3309, 32, mldsaFamily{}},
+	MLDSA87: {"ML-DSA-87", asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 19}, 2592, 4627, 32, mldsaFamily{}},
 }
 
 // String returns the canonical FIPS 204 name, e.g. "ML-DSA-65".
@@ -46,8 +48,9 @@ func (a Algorithm) PublicKeySize() int { return algorithms[a].pkSize }
 // SignatureSize returns the signature length in bytes.
 func (a Algorithm) SignatureSize() int { return algorithms[a].sigSize }
 
-// SeedSize returns the private key seed length in bytes.
-func (a Algorithm) SeedSize() int { return 32 }
+// SeedSize returns the private key material length in bytes: 32 for the
+// ML-DSA seed, 4n (64/96/128) for SLH-DSA.
+func (a Algorithm) SeedSize() int { return algorithms[a].seedSize }
 
 // Valid reports whether a is a supported algorithm.
 func (a Algorithm) Valid() bool { _, ok := algorithms[a]; return ok }
