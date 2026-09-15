@@ -393,3 +393,100 @@ func TestParseCertificateOpenSSLMinimalShape(t *testing.T) {
 		t.Errorf("self-signature: %v", err)
 	}
 }
+
+func TestSLHDSACertificateChain(t *testing.T) {
+	// 256s root -> 192s intermediate -> 128s leaf, mirroring the issuance
+	// allow-list the ca engine will enforce.
+	mk := func(alg Algorithm, cn string, isCA bool, maxPathLen int) (*Certificate, PublicKey, Signer) {
+		pub, priv, err := GenerateKey(rand.Reader, alg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		signer, err := priv.Signer()
+		if err != nil {
+			t.Fatal(err)
+		}
+		serial, _ := GenerateSerialNumber(rand.Reader)
+		tmpl := &Certificate{
+			SerialNumber:          serial,
+			SignatureAlgorithm:    alg,
+			Subject:               Name{CommonName: cn, Organization: []string{"pqtrust"}},
+			NotBefore:             time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+			NotAfter:              time.Date(2031, 1, 1, 0, 0, 0, 0, time.UTC),
+			BasicConstraints:      BasicConstraints{IsCA: isCA, MaxPathLen: maxPathLen, MaxPathLenSet: isCA},
+			BasicConstraintsValid: true,
+		}
+		if isCA {
+			tmpl.KeyUsage = KeyUsageKeyCertSign | KeyUsageCRLSign
+		} else {
+			tmpl.KeyUsage = KeyUsageDigitalSignature
+			tmpl.ExtKeyUsage = []ExtKeyUsage{ExtKeyUsageServerAuth}
+			tmpl.SANs = SANs{DNSNames: []string{"slh.example.com"}}
+		}
+		return tmpl, pub, signer
+	}
+
+	rootTmpl, rootPub, rootSigner := mk(SLHDSA_SHA2_256s, "SLH Root", true, 1)
+	rootDER, err := CreateCertificate(rand.Reader, rootTmpl, rootTmpl, rootPub, rootSigner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, err := ParseCertificate(rootDER)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := root.VerifySignatureFrom(root); err != nil {
+		t.Fatalf("root self-signature: %v", err)
+	}
+	if root.PublicKey.Algorithm != SLHDSA_SHA2_256s || root.SignatureAlgorithm != SLHDSA_SHA2_256s {
+		t.Fatalf("root algorithms = %v/%v", root.PublicKey.Algorithm, root.SignatureAlgorithm)
+	}
+
+	interTmpl, interPub, interSigner := mk(SLHDSA_SHA2_192s, "SLH Intermediate", true, 0)
+	// The template's SignatureAlgorithm must be the signer's algorithm: an
+	// issued certificate is signed with the parent's algorithm, exactly as
+	// the ca engine sets signatureAlg = parentCert.PublicKey.Algorithm.
+	interTmpl.SignatureAlgorithm = SLHDSA_SHA2_256s
+	interDER, err := CreateCertificate(rand.Reader, interTmpl, root, interPub, rootSigner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inter, err := ParseCertificate(interDER)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if inter.SignatureAlgorithm != SLHDSA_SHA2_256s {
+		t.Fatalf("intermediate must be signed with the root's algorithm, got %v", inter.SignatureAlgorithm)
+	}
+
+	leafTmpl, leafPub, _ := mk(SLHDSA_SHA2_128s, "slh.example.com", false, 0)
+	leafTmpl.SignatureAlgorithm = SLHDSA_SHA2_192s
+	leafDER, err := CreateCertificate(rand.Reader, leafTmpl, inter, leafPub, interSigner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	leaf, err := ParseCertificate(leafDER)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chains, err := leaf.Verify(VerifyOptions{
+		Roots:         []*Certificate{root},
+		Intermediates: []*Certificate{inter},
+		CurrentTime:   time.Date(2028, 6, 1, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatalf("path validation: %v", err)
+	}
+	if len(chains) != 1 || len(chains[0]) != 3 {
+		t.Fatalf("chains = %d (first len %d), want one chain of 3", len(chains), len(chains[0]))
+	}
+
+	// The leaf carries the INTERMEDIATE's signature: 192s-sized, not 128s-sized.
+	if leaf.SignatureAlgorithm != SLHDSA_SHA2_192s {
+		t.Errorf("leaf signature algorithm = %v, want SLH-DSA-SHA2-192s", leaf.SignatureAlgorithm)
+	}
+	if len(leaf.Signature) != SLHDSA_SHA2_192s.SignatureSize() {
+		t.Errorf("leaf signature is %d bytes, want %d", len(leaf.Signature), SLHDSA_SHA2_192s.SignatureSize())
+	}
+}

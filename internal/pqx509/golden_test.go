@@ -66,3 +66,66 @@ func TestGoldenSelfSignedRoot(t *testing.T) {
 		t.Errorf("golden self-signature must verify: %v", err)
 	}
 }
+
+func TestGoldenSelfSignedRootSLHDSA(t *testing.T) {
+	for _, alg := range []struct {
+		v    Algorithm
+		file string
+	}{
+		{SLHDSA_SHA2_128s, "root-slhdsa-sha2-128s.der"},
+		{SLHDSA_SHA2_192s, "root-slhdsa-sha2-192s.der"},
+		{SLHDSA_SHA2_256s, "root-slhdsa-sha2-256s.der"},
+	} {
+		t.Run(alg.file, func(t *testing.T) {
+			path := filepath.Join("..", "..", "testdata", "golden", alg.file)
+			if *update {
+				pub, priv, err := GenerateKey(rand.Reader, alg.v)
+				if err != nil {
+					t.Fatal(err)
+				}
+				signer, err := priv.Signer()
+				if err != nil {
+					t.Fatal(err)
+				}
+				serial, _ := GenerateSerialNumber(rand.Reader)
+				tmpl := &Certificate{
+					SerialNumber:          serial,
+					SignatureAlgorithm:    alg.v,
+					Subject:               Name{CommonName: "pqtrust Golden SLH Root", Organization: []string{"pqtrust"}, Country: []string{"ES"}},
+					NotBefore:             time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+					NotAfter:              time.Date(2036, 1, 1, 0, 0, 0, 0, time.UTC),
+					BasicConstraints:      BasicConstraints{IsCA: true, MaxPathLen: 1, MaxPathLenSet: true},
+					BasicConstraintsValid: true,
+					KeyUsage:              KeyUsageKeyCertSign | KeyUsageCRLSign,
+				}
+				der, err := CreateCertificate(rand.Reader, tmpl, tmpl, pub, signer)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil { //nolint:gosec // generated golden fixtures are repository test data
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(path, der, 0o644); err != nil { //nolint:gosec // generated golden fixtures are repository test data
+					t.Fatal(err)
+				}
+				t.Log("golden fixture regenerated")
+				return
+			}
+
+			der, err := os.ReadFile(path) //nolint:gosec // path is the fixed golden fixture location
+			if err != nil {
+				t.Fatalf("read golden fixture (run `go test ./internal/pqx509 -update` once to create it): %v", err)
+			}
+			cert, err := ParseCertificate(der)
+			if err != nil {
+				t.Fatalf("golden certificate must parse: %v", err)
+			}
+			if cert.PublicKey.Algorithm != alg.v {
+				t.Errorf("public key algorithm = %v, want %v", cert.PublicKey.Algorithm, alg.v)
+			}
+			if err := Verify(cert.PublicKey, cert.RawTBSCertificate, cert.Signature); err != nil {
+				t.Errorf("golden self-signature must verify: %v", err)
+			}
+		})
+	}
+}

@@ -449,3 +449,46 @@ func concatDER(parts ...[]byte) []byte {
 	}
 	return out
 }
+
+func TestSLHDSACSRRoundTrip(t *testing.T) {
+	for _, alg := range []Algorithm{SLHDSA_SHA2_128s, SLHDSA_SHA2_192s, SLHDSA_SHA2_256s, SLHDSA_SHAKE_128s, SLHDSA_SHA2_128f} {
+		t.Run(alg.String(), func(t *testing.T) {
+			pub, priv, err := GenerateKey(rand.Reader, alg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			signer, err := priv.Signer()
+			if err != nil {
+				t.Fatal(err)
+			}
+			der, err := CreateCertificateRequest(rand.Reader,
+				Name{CommonName: "slh-csr.example.com"}, pub, signer,
+				SANs{DNSNames: []string{"slh-csr.example.com"}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			csr, err := ParseCertificateRequest(der)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if csr.PublicKey.Algorithm != alg || csr.SignatureAlgorithm != alg {
+				t.Fatalf("CSR algorithms = %v/%v", csr.PublicKey.Algorithm, csr.SignatureAlgorithm)
+			}
+			if err := csr.CheckSignature(); err != nil {
+				t.Fatalf("self-signature: %v", err)
+			}
+			// Tampered signature must parse (the DER is still well-formed)
+			// but fail CheckSignature: the last DER byte is the last
+			// signature byte inside the BIT STRING.
+			bad := bytes.Clone(der)
+			bad[len(bad)-1] ^= 0xFF
+			badCSR, err := ParseCertificateRequest(bad)
+			if err != nil {
+				t.Fatalf("tampered CSR must still parse: %v", err)
+			}
+			if err := badCSR.CheckSignature(); err == nil {
+				t.Error("tampered CSR signature must not verify")
+			}
+		})
+	}
+}
