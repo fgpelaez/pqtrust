@@ -45,7 +45,8 @@ func EncodePrivateKeyPEM(priv PrivateKey) ([]byte, error) {
 }
 
 // DecodePrivateKeyPEM reads a PKCS#8 "PRIVATE KEY" block or the legacy
-// Phase 1 "PQTRUST ML-DSA PRIVATE KEY" block (raw seed + Algorithm header).
+// Phase 1 "PQTRUST ML-DSA PRIVATE KEY" block (raw key material + Algorithm
+// header).
 func DecodePrivateKeyPEM(pemBytes []byte) (PrivateKey, error) {
 	block, _ := pem.Decode(pemBytes)
 	if block == nil {
@@ -63,8 +64,8 @@ func DecodePrivateKeyPEM(pemBytes []byte) (PrivateKey, error) {
 		if err != nil {
 			return PrivateKey{}, fmt.Errorf("pqx509: legacy private key PEM algorithm header: %w", err)
 		}
-		if len(block.Bytes) != 32 {
-			return PrivateKey{}, fmt.Errorf("%w: legacy seed is %d bytes, want 32", ErrInvalidKeySize, len(block.Bytes))
+		if len(block.Bytes) != alg.SeedSize() {
+			return PrivateKey{}, fmt.Errorf("%w: legacy key material is %d bytes, want %d", ErrInvalidKeySize, len(block.Bytes), alg.SeedSize())
 		}
 		return PrivateKey{Algorithm: alg, Seed: bytes.Clone(block.Bytes)}, nil
 	default:

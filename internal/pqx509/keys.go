@@ -104,7 +104,7 @@ func publicKeyFromSPKI(spki subjectPublicKeyInfo) (PublicKey, error) {
 		return PublicKey{}, err
 	}
 	if len(spki.Algorithm.Parameters.FullBytes) != 0 {
-		return PublicKey{}, fmt.Errorf("%w: ML-DSA AlgorithmIdentifier must omit parameters", ErrMalformedDER)
+		return PublicKey{}, fmt.Errorf("%w: AlgorithmIdentifier must omit parameters", ErrMalformedDER)
 	}
 	if spki.PublicKey.BitLength%8 != 0 {
 		return PublicKey{}, fmt.Errorf("%w: SPKI BIT STRING has unused bits", ErrMalformedDER)

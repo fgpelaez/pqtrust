@@ -56,7 +56,8 @@ var algorithms = map[Algorithm]algorithmInfo{
 	SLHDSA_SHAKE_256f: {"SLH-DSA-SHAKE-256f", asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 31}, 64, 49856, 128, slhdsaFamily{}},
 }
 
-// String returns the canonical FIPS 204 name, e.g. "ML-DSA-65".
+// String returns the canonical FIPS 204/205 name, e.g. "ML-DSA-65" or
+// "SLH-DSA-SHA2-128s".
 func (a Algorithm) String() string {
 	if info, ok := algorithms[a]; ok {
 		return info.name
