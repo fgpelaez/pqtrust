@@ -451,9 +451,9 @@ func TestTokenHelpers(t *testing.T) {
 	}
 }
 
-func makeCSRPEM(t *testing.T, subj pqx509.Name, sans pqx509.SANs) string {
+func makeCSRPEM(t *testing.T, subj pqx509.Name, sans pqx509.SANs, alg pqx509.Algorithm) string {
 	t.Helper()
-	pub, priv, err := pqx509.GenerateKey(rand.Reader, pqx509.MLDSA44)
+	pub, priv, err := pqx509.GenerateKey(rand.Reader, alg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -475,7 +475,7 @@ func TestIssueFromCSRHappyPath(t *testing.T) {
 
 	csrPEM := makeCSRPEM(t,
 		pqx509.Name{CommonName: "csr.example.com", Organization: []string{"pqtrust"}},
-		pqx509.SANs{DNSNames: []string{"csr.example.com"}})
+		pqx509.SANs{DNSNames: []string{"csr.example.com"}}, pqx509.MLDSA44)
 
 	rec := h.do(t, http.MethodPost, "/v1/certificates", map[string]any{
 		"ca_id":         interID,
@@ -523,7 +523,7 @@ func TestIssueFromCSRRejectsForbiddenFields(t *testing.T) {
 	h := newHarness(t)
 	rootID := h.createRoot(t)
 	interID := h.createIntermediate(t, rootID)
-	csrPEM := makeCSRPEM(t, pqx509.Name{CommonName: "x.example.com"}, pqx509.SANs{DNSNames: []string{"x.example.com"}})
+	csrPEM := makeCSRPEM(t, pqx509.Name{CommonName: "x.example.com"}, pqx509.SANs{DNSNames: []string{"x.example.com"}}, pqx509.MLDSA44)
 
 	cases := []struct {
 		name  string
@@ -561,7 +561,7 @@ func TestIssueFromCSRTampered(t *testing.T) {
 	rootID := h.createRoot(t)
 	interID := h.createIntermediate(t, rootID)
 
-	csrPEM := makeCSRPEM(t, pqx509.Name{CommonName: "x.example.com"}, pqx509.SANs{DNSNames: []string{"x.example.com"}})
+	csrPEM := makeCSRPEM(t, pqx509.Name{CommonName: "x.example.com"}, pqx509.SANs{DNSNames: []string{"x.example.com"}}, pqx509.MLDSA44)
 	block, _ := pem.Decode([]byte(csrPEM))
 	block.Bytes[len(block.Bytes)-1] ^= 0xFF
 	tampered := string(pem.EncodeToMemory(block))
@@ -597,5 +597,118 @@ func TestIssueKeygenReturnsPKCS8PEM(t *testing.T) {
 	}
 	if _, err := pqx509.DecodePrivateKeyPEM([]byte(out.PrivateKeyPEM)); err != nil {
 		t.Errorf("private_key_pem must decode: %v", err)
+	}
+}
+
+func TestSLHDSAIssuanceFlow(t *testing.T) {
+	h := newHarness(t)
+
+	rec := h.do(t, http.MethodPost, "/v1/ca", map[string]any{
+		"name":       "SLH Root",
+		"algorithm":  "SLH-DSA-SHA2-256s",
+		"subject":    map[string]any{"common_name": "pqtrust SLH Root CA"},
+		"passphrase": testPassphrase,
+	}, nil)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create SLH root: %d %s", rec.Code, rec.Body.String())
+	}
+	var rootOut map[string]any
+	decode(t, rec, &rootOut)
+	if rootOut["algorithm"] != "SLH-DSA-SHA2-256s" {
+		t.Errorf("root algorithm echoed %v", rootOut["algorithm"])
+	}
+	rootID := rootOut["id"].(string)
+
+	rec = h.do(t, http.MethodPost, "/v1/ca", map[string]any{
+		"name":              "SLH Issuing",
+		"parent_id":         rootID,
+		"algorithm":         "slh-dsa-shake-192s", // case-insensitive intake
+		"subject":           map[string]any{"common_name": "pqtrust SLH Issuing CA"},
+		"passphrase":        testPassphrase,
+		"parent_passphrase": testPassphrase,
+	}, nil)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("create SLH intermediate: %d %s", rec.Code, rec.Body.String())
+	}
+	var interOut map[string]any
+	decode(t, rec, &interOut)
+	interID := interOut["id"].(string)
+
+	// End-entity keygen returns a 4n PKCS#8 key.
+	rec = h.do(t, http.MethodPost, "/v1/certificates", map[string]any{
+		"ca_id":      interID,
+		"passphrase": testPassphrase,
+		"subject":    map[string]any{"common_name": "slh.example.com"},
+		"dns_names":  []string{"slh.example.com"},
+		"algorithm":  "SLH-DSA-SHA2-128s",
+	}, nil)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("issue SLH-DSA EE: %d %s", rec.Code, rec.Body.String())
+	}
+	var issued map[string]any
+	decode(t, rec, &issued)
+	keyPEM, _ := issued["private_key_pem"].(string)
+	if !strings.HasPrefix(keyPEM, "-----BEGIN PRIVATE KEY-----") {
+		t.Errorf("private_key_pem is not PKCS#8: %.40s", keyPEM)
+	}
+	block, _ := pem.Decode([]byte(keyPEM))
+	priv, err := pqx509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		t.Fatalf("returned key does not parse: %v", err)
+	}
+	if priv.Algorithm != pqx509.SLHDSA_SHA2_128s || len(priv.Seed) != 64 {
+		t.Errorf("returned key = %v (%d bytes)", priv.Algorithm, len(priv.Seed))
+	}
+
+	// CSR path with an SLH-DSA CSR.
+	csrPEM := makeCSRPEM(t, pqx509.Name{CommonName: "slh-csr.example.com"},
+		pqx509.SANs{DNSNames: []string{"slh-csr.example.com"}}, pqx509.SLHDSA_SHAKE_128s)
+	rec = h.do(t, http.MethodPost, "/v1/certificates", map[string]any{
+		"ca_id":      interID,
+		"passphrase": testPassphrase,
+		"csr_pem":    csrPEM,
+	}, nil)
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("issue from SLH-DSA CSR: %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestSLHDSAErrorShapes(t *testing.T) {
+	h := newHarness(t)
+
+	// Unknown name -> 400 problem+json.
+	rec := h.do(t, http.MethodPost, "/v1/ca", map[string]any{
+		"name": "X", "algorithm": "SLH-DSA-SHA2-128x",
+		"subject": map[string]any{"common_name": "X"}, "passphrase": testPassphrase,
+	}, nil)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("unknown algorithm: %d %s", rec.Code, rec.Body.String())
+	}
+	if ct := rec.Header().Get("Content-Type"); !strings.Contains(ct, "application/problem+json") {
+		t.Errorf("Content-Type = %q", ct)
+	}
+
+	// Level violation -> 422 naming the allowed set.
+	rootID := h.createRoot(t)
+	rec = h.do(t, http.MethodPost, "/v1/ca", map[string]any{
+		"name": "Bad", "parent_id": rootID, "algorithm": "SLH-DSA-SHA2-256s",
+		"subject": map[string]any{"common_name": "Bad"},
+		"passphrase": testPassphrase, "parent_passphrase": testPassphrase,
+	}, nil)
+	if rec.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("intermediate with 256s: %d %s", rec.Code, rec.Body.String())
+	}
+	if !strings.Contains(rec.Body.String(), "SLH-DSA-SHA2-192s") {
+		t.Errorf("422 detail must list the allowed algorithms: %s", rec.Body.String())
+	}
+
+	// End-entity 192f via the API -> 422.
+	interID := h.createIntermediate(t, rootID)
+	rec = h.do(t, http.MethodPost, "/v1/certificates", map[string]any{
+		"ca_id": interID, "passphrase": testPassphrase,
+		"subject": map[string]any{"common_name": "x"}, "algorithm": "SLH-DSA-SHA2-192f",
+	}, nil)
+	if rec.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("EE with 192f: %d %s", rec.Code, rec.Body.String())
 	}
 }
