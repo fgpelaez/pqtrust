@@ -101,3 +101,41 @@ func TestUnsealRejectsGarbage(t *testing.T) {
 		t.Error("garbage input must be rejected")
 	}
 }
+
+func TestSealUnsealSLHDSA(t *testing.T) {
+	for _, alg := range []pqx509.Algorithm{pqx509.SLHDSA_SHA2_128s, pqx509.SLHDSA_SHAKE_256s} {
+		pub, priv, err := pqx509.GenerateKey(rand.Reader, alg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(priv.Seed) != alg.SeedSize() {
+			t.Fatalf("%s key material is %d bytes, want %d", alg, len(priv.Seed), alg.SeedSize())
+		}
+		blob, err := Seal(priv, []byte("pass"))
+		if err != nil {
+			t.Fatalf("%s: Seal: %v", alg, err)
+		}
+		back, err := Unseal(blob, []byte("pass"))
+		if err != nil {
+			t.Fatalf("%s: Unseal: %v", alg, err)
+		}
+		if back.Algorithm != alg || !bytes.Equal(back.Seed, priv.Seed) {
+			t.Fatalf("%s: round-trip mismatch", alg)
+		}
+		signer, err := back.Signer()
+		if err != nil {
+			t.Fatal(err)
+		}
+		msg := []byte("sealed slh-dsa")
+		sig, err := signer.Sign(nil, msg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := pqx509.Verify(pub, msg, sig); err != nil {
+			t.Errorf("%s: unsealed key does not sign verifiably: %v", alg, err)
+		}
+		if _, err := Unseal(blob, []byte("wrong")); err == nil {
+			t.Error("wrong passphrase must fail")
+		}
+	}
+}
