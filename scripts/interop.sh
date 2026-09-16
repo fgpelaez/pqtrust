@@ -153,4 +153,102 @@ openssl pkey -in "$work/pqtrust-key.pem" -noout -text > "$work/pqtrust-key.txt" 
 grep -q 'seed:' "$work/pqtrust-key.txt" \
 	|| { echo "FAIL: openssl did not report an ML-DSA seed key" >&2; exit 1; }
 
+echo "== SLH-DSA: pqtrust issues a full SLH-DSA hierarchy =="
+slh_root_id="$(api -X POST "$base/v1/ca" -d "{
+	\"name\":\"Interop SLH Root\",
+	\"algorithm\":\"SLH-DSA-SHA2-256s\",
+	\"subject\":{\"common_name\":\"pqtrust Interop SLH Root CA\",\"organization\":[\"pqtrust\"]},
+	\"passphrase\":\"$pass\"
+}" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+
+slh_inter_json="$(api -X POST "$base/v1/ca" -d "{
+	\"name\":\"Interop SLH Issuing\",
+	\"parent_id\":\"$slh_root_id\",
+	\"algorithm\":\"SLH-DSA-SHA2-192s\",
+	\"subject\":{\"common_name\":\"pqtrust Interop SLH Issuing CA\",\"organization\":[\"pqtrust\"]},
+	\"passphrase\":\"$pass\",
+	\"parent_passphrase\":\"$pass\"
+}")"
+slh_inter_id="$(printf '%s' "$slh_inter_json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+
+api -X POST "$base/v1/certificates" -d "{
+	\"ca_id\":\"$slh_inter_id\",
+	\"passphrase\":\"$pass\",
+	\"subject\":{\"common_name\":\"slh-interop.example.com\"},
+	\"dns_names\":[\"slh-interop.example.com\"],
+	\"algorithm\":\"SLH-DSA-SHA2-128s\"
+}" > "$work/slh-issued.json"
+
+WORK="$work" python3 - <<'PY'
+import json, os, re
+work = os.environ["WORK"]
+d = json.load(open(os.path.join(work, "slh-issued.json")))
+open(os.path.join(work, "slh-serial.txt"), "w").write(d["serial"])
+open(os.path.join(work, "slh-ee.key"), "w").write(d["private_key_pem"])
+blocks = re.findall(r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----", d["chain_pem"], re.S)
+assert len(blocks) == 3, f"expected 3 certificates in the SLH-DSA chain, got {len(blocks)}"
+for name, block in zip(["slh-leaf.pem", "slh-intermediate.pem", "slh-root.pem"], blocks):
+    open(os.path.join(work, name), "w").write(block + "\n")
+PY
+
+echo "== openssl must parse and verify the SLH-DSA chain =="
+for f in slh-leaf slh-intermediate slh-root; do
+	openssl x509 -in "$work/$f.pem" -noout -text > "$work/$f.txt" \
+		|| { echo "FAIL: openssl cannot print $f" >&2; exit 1; }
+	grep -q 'SLH-DSA' "$work/$f.txt" \
+		|| { echo "FAIL: openssl did not report an SLH-DSA algorithm for $f" >&2; exit 1; }
+done
+openssl verify -CAfile "$work/slh-root.pem" -untrusted "$work/slh-intermediate.pem" "$work/slh-leaf.pem"
+
+echo "== openssl pkey must read our RFC 9909 PKCS#8 SLH-DSA key =="
+openssl pkey -in "$work/slh-ee.key" -noout -text > "$work/slh-ee-key.txt" \
+	|| { echo "FAIL: openssl cannot read the SLH-DSA PKCS#8 key" >&2; exit 1; }
+grep -q 'SLH-DSA' "$work/slh-ee-key.txt" \
+	|| { echo "FAIL: openssl did not report an SLH-DSA key" >&2; exit 1; }
+
+echo "== SLH-DSA CSR: openssl generates, pqtrust parses and issues =="
+if ! openssl req -new -newkey SLH-DSA-SHA2-128s -nodes \
+	-keyout "$work/ossl-slh.key" -out "$work/ossl-slh-csr.pem" \
+	-subj "/CN=slh-csr.example.com" -config /dev/null 2>/dev/null; then
+	# Fallback for req -newkey name resolution differences: genpkey + req -new.
+	openssl genpkey -algorithm SLH-DSA-SHA2-128s -out "$work/ossl-slh.key"
+	openssl req -new -key "$work/ossl-slh.key" -out "$work/ossl-slh-csr.pem" \
+		-subj "/CN=slh-csr.example.com" -config /dev/null
+fi
+CGO_ENABLED=0 go run ./scripts/parsecsr "$work/ossl-slh-csr.pem" \
+	| tee "$work/parsecsr-slh.txt"
+grep -q 'SLH-DSA' "$work/parsecsr-slh.txt" \
+	|| { echo "FAIL: parsecsr did not report an SLH-DSA CSR" >&2; exit 1; }
+
+SLH_INTER_ID="$slh_inter_id" PASS="$pass" WORK="$work" python3 - <<'PY'
+import json, os
+env = os.environ
+csr = open(os.path.join(env["WORK"], "ossl-slh-csr.pem")).read()
+body = {"ca_id": env["SLH_INTER_ID"], "passphrase": env["PASS"], "csr_pem": csr}
+open(os.path.join(env["WORK"], "slh-csr-issue.json"), "w").write(json.dumps(body))
+PY
+api -X POST "$base/v1/certificates" -d@"$work/slh-csr-issue.json" > "$work/slh-csr-issued.json"
+WORK="$work" python3 - <<'PY'
+import json, os
+work = os.environ["WORK"]
+d = json.load(open(os.path.join(work, "slh-csr-issued.json")))
+assert not d.get("private_key_pem"), "CSR issuance must not return a private key"
+open(os.path.join(work, "slh-csr-leaf.pem"), "w").write(d["certificate_pem"])
+PY
+openssl verify -CAfile "$work/slh-root.pem" -untrusted "$work/slh-intermediate.pem" "$work/slh-csr-leaf.pem"
+
+echo "== SLH-DSA CSR: pqtrust generates (mkcsr -alg), openssl verifies =="
+CGO_ENABLED=0 go run ./scripts/mkcsr -dir "$work" -alg SLH-DSA-SHAKE-128s
+openssl req -verify -noout -in "$work/pqtrust-csr.pem" -config /dev/null
+
+echo "== revoke, then openssl verifies the SLH-DSA-signed CRL =="
+slh_serial="$(cat "$work/slh-serial.txt")"
+api -X POST "$base/v1/certificates/$slh_serial/revoke" -d '{"reason":1}' >/dev/null
+curl -fsk -H "Authorization: Bearer $token" -H "X-PQTrust-Passphrase: $pass" \
+	-H 'Accept: application/x-pem-file' "$base/v1/ca/$slh_inter_id/crl" -o "$work/slh-crl.pem"
+openssl crl -in "$work/slh-crl.pem" -noout -text > "$work/slh-crl.txt"
+grep -qi "$slh_serial" "$work/slh-crl.txt" \
+	|| { echo "FAIL: the revoked serial is not on the SLH-DSA CRL according to openssl" >&2; exit 1; }
+openssl crl -in "$work/slh-crl.pem" -CAfile "$work/slh-intermediate.pem" -noout -verify
+
 echo "ALL INTEROP CHECKS PASSED"
