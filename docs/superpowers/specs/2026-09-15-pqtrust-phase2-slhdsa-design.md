@@ -1,7 +1,7 @@
 # pqtrust Phase 2 — SLH-DSA (FIPS 205) support
 
 **Date:** 2026-09-15
-**Status:** Approved (design sections approved 2026-09-15)
+**Status:** Shipped (2026-09-16)
 **Parent:** `docs/superpowers/specs/2026-08-16-pqtrust-design.md` §12, Phase 2,
 item 3 of 5.
 **Goal:** pqtrust issues and verifies certificates, CRLs, CSRs and PKCS#8 keys

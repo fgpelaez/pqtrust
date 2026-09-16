@@ -4,10 +4,10 @@
 [![interop](https://github.com/fgpelaez/pqtrust/actions/workflows/interop.yml/badge.svg)](https://github.com/fgpelaez/pqtrust/actions/workflows/interop.yml)
 
 pqtrust is a self-hosted post-quantum certificate authority written in Go. It
-issues X.509 certificates signed with ML-DSA (FIPS 204, the NIST post-quantum
-signature standard), exposes a small REST API for hierarchy management and
-issuance, and ships its own `pqx509` layer because Go's `crypto/x509` rejects
-the ML-DSA signature OIDs.
+issues X.509 certificates signed with ML-DSA (FIPS 204) and SLH-DSA (FIPS
+205) — the two NIST post-quantum signature standards — exposes a small REST
+API for hierarchy management and issuance, and ships its own `pqx509` layer
+because Go's `crypto/x509` rejects their signature OIDs.
 
 The daemon is one static binary, pure Go (`CGO_ENABLED=0` everywhere),
 SQLite-backed, and uses a hybrid post-quantum TLS key exchange
@@ -23,12 +23,13 @@ of pqtrust is to give engineers a small, honest daemon they can run on a laptop
 to issue ML-DSA hierarchies and to give protocol designers something they can
 interoperate with.
 
-This is Phase 1 of three, plus the first Phase 2 slice: PKCS#10 CSR
-enrollment and PKCS#8 key export are in. The rest of Phase 2 adds the
-`pqtrust` CLI, SLH-DSA and composite (hybrid) certificates per
-`draft-ietf-lamps-pq-composite-sigs`. Phase 3 is the web dashboard and OCSP
-responder. See [`LIMITATIONS.md`](./LIMITATIONS.md) for what is intentionally
-not built yet.
+This is Phase 1 of three, plus two Phase 2 slices: PKCS#10 CSR enrollment
+and PKCS#8 key export are in, and so is SLH-DSA — all twelve FIPS 205
+parameter sets, issued and verified alongside ML-DSA. The rest of Phase 2
+adds the `pqtrust` CLI, composite (hybrid) certificates per
+`draft-ietf-lamps-pq-composite-sigs`, and the Dockerfile + compose setup.
+Phase 3 is the web dashboard and OCSP responder. See
+[`LIMITATIONS.md`](./LIMITATIONS.md) for what is intentionally not built yet.
 
 ## Architecture
 
@@ -55,7 +56,7 @@ Responsibility per package (see the plan for the full table):
 
 | Path | Responsibility |
 |---|---|
-| `internal/pqx509` | Pure-Go DER layer: ML-DSA algorithms, keys, PKCS#8, PKCS#10 CSRs, certificates, CRLs, extensions, verify, PEM |
+| `internal/pqx509` | Pure-Go DER layer: ML-DSA and SLH-DSA algorithms, keys, PKCS#8, PKCS#10 CSRs, certificates, CRLs, extensions, verify, PEM |
 | `internal/keystore` | `Backend` interface, Argon2id+AES-256-GCM sealed envelope, filesystem backend |
 | `internal/store` | SQLite persistence with embedded migrations for CAs, certificates and tokens |
 | `internal/config` | YAML configuration with environment overrides and validation |
@@ -121,16 +122,38 @@ curl -sk -H "Authorization: Bearer $PQTRUST_TOKEN" -H 'Content-Type: application
 jq -r .certificate_pem /tmp/pqtrust/enrolled.json > /tmp/pqtrust/enrolled.pem
 openssl verify -CAfile /tmp/pqtrust/chain.pem /tmp/pqtrust/enrolled.pem
 
+# 6c. Optional: issue a full SLH-DSA hierarchy (FIPS 205). s-set signing
+# costs ~0.1-1 s per signature, so expect each call to take a second or so.
+SLH_ROOT=$(curl -sk -H "Authorization: Bearer $PQTRUST_TOKEN" -H 'Content-Type: application/json' \
+  -X POST https://127.0.0.1:8443/v1/ca -d "{
+    \"name\":\"Demo SLH Root\",\"algorithm\":\"SLH-DSA-SHA2-256s\",
+    \"subject\":{\"common_name\":\"Demo SLH Root CA\",\"organization\":[\"pqtrust\"]},
+    \"passphrase\":\"$PASS\"}" | jq -r .id)
+
+SLH_INTER=$(curl -sk -H "Authorization: Bearer $PQTRUST_TOKEN" -H 'Content-Type: application/json' \
+  -X POST https://127.0.0.1:8443/v1/ca -d "{
+    \"name\":\"Demo SLH Issuing\",\"parent_id\":\"$SLH_ROOT\",\"algorithm\":\"SLH-DSA-SHA2-192s\",
+    \"subject\":{\"common_name\":\"Demo SLH Issuing CA\"},
+    \"passphrase\":\"$PASS\",\"parent_passphrase\":\"$PASS\"}" | jq -r .id)
+
+curl -sk -H "Authorization: Bearer $PQTRUST_TOKEN" -H 'Content-Type: application/json' \
+  -X POST https://127.0.0.1:8443/v1/certificates -d "{
+    \"ca_id\":\"$SLH_INTER\",\"passphrase\":\"$PASS\",\"algorithm\":\"SLH-DSA-SHA2-128s\",
+    \"subject\":{\"common_name\":\"slh.example.com\"},
+    \"dns_names\":[\"slh.example.com\"]}" | jq -r .chain_pem > /tmp/pqtrust/slh-chain.pem
+
 # 7. Verify with OpenSSL 3.5+ — third-party proof, not our own code
 openssl x509 -in /tmp/pqtrust/chain.pem -noout -text | head -15
 ```
 
 The demo passes when `jq -r .id` returns the CA IDs in step 5 and
-`/tmp/pqtrust/chain.pem` contains three `BEGIN CERTIFICATE` blocks in step 6.
-Step 7 is informational: it shows that a third-party parser (OpenSSL 3.5+)
-also reads pqtrust's ML-DSA DER. On systems whose `openssl` is older than 3.5,
-steps 6b and 7 will fail because the local OpenSSL does not understand
-ML-DSA OIDs; the demonstration is correct for the documented environment.
+`/tmp/pqtrust/chain.pem` contains three `BEGIN CERTIFICATE` blocks in step 6
+(and, if you ran step 6c, `/tmp/pqtrust/slh-chain.pem` contains three blocks
+as well). Step 7 is informational: it shows that a third-party parser
+(OpenSSL 3.5+) also reads pqtrust's ML-DSA DER. On systems whose `openssl` is
+older than 3.5, steps 6b and 7 will fail because the local OpenSSL does not
+understand ML-DSA OIDs (step 6c needs only `curl` and `jq`); the
+demonstration is correct for the documented environment.
 
 ## API reference
 
@@ -150,11 +173,14 @@ bearer token in `Authorization`, except `GET /v1/health`.
 
 Subjects accept: `common_name`, `organization`, `organizational_unit`,
 `country`, `locality`, `province` (string or array of strings). The `algorithm`
-field accepts `ML-DSA-44`, `ML-DSA-65`, `ML-DSA-87`. Keys are generated
-server-side by default and returned once as PKCS#8 PEM
-(raw ML-DSA seed per `draft-ietf-lamps-dilithium-certificates`). With
-`csr_pem`, the client keeps its own key — subject and SANs come from the CSR,
-EKU and validity from the request — and no private key is returned.
+field accepts `ML-DSA-44`, `ML-DSA-65`, `ML-DSA-87`, and the twelve SLH-DSA
+sets `SLH-DSA-SHA2-128s`…`SLH-DSA-SHAKE-256f` (FIPS 205). Root CAs accept
+ML-DSA-87 and the 256s sets; intermediates ML-DSA-65 and the 192s sets;
+end-entity certificates ML-DSA-44/65 and the 128s/f sets. Keys are generated
+server-side by default and returned once as PKCS#8 PEM — the raw 32-byte
+ML-DSA seed per RFC 9881, or the 4n-byte SLH-DSA private key per RFC 9909.
+With `csr_pem`, the client keeps its own key — subject and SANs come from the
+CSR, EKU and validity from the request — and no private key is returned.
 
 ## Configuration
 
@@ -188,7 +214,7 @@ make race     # tests with the race detector (requires CGO_ENABLED=1)
 make build    # static binary into ./bin/pqtrustd
 make tidy     # go mod tidy
 
-./scripts/fetch-acvp.sh   # populate testdata/acvp/ with NIST ML-DSA vectors
+./scripts/fetch-acvp.sh   # populate testdata/acvp/ with NIST ML-DSA and SLH-DSA vectors
 ./scripts/interop.sh      # build, run, issue, and verify with OpenSSL 3.5+
 ```
 
