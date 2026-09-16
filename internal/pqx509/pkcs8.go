@@ -7,9 +7,10 @@ import (
 )
 
 // oneAsymmetricKey is the PKCS#8 (RFC 5958) private key structure. For ML-DSA
-// the privateKey OCTET STRING carries the raw 32-byte seed, per
-// draft-ietf-lamps-dilithium-certificates; the AlgorithmIdentifier parameters
-// are absent, matching every other ML-DSA structure pqtrust emits.
+// the privateKey OCTET STRING carries the raw 32-byte seed per RFC 9881; for
+// SLH-DSA it carries the 4n-byte private key per RFC 9909 §7. The
+// AlgorithmIdentifier parameters are absent, matching every other structure
+// pqtrust emits.
 type oneAsymmetricKey struct {
 	Version    int
 	Algorithm  algorithmIdentifier
@@ -21,8 +22,8 @@ func MarshalPKCS8PrivateKey(priv PrivateKey) ([]byte, error) {
 	if !priv.Algorithm.Valid() {
 		return nil, fmt.Errorf("%w: %v", ErrUnknownAlgorithm, priv.Algorithm)
 	}
-	if len(priv.Seed) != 32 {
-		return nil, fmt.Errorf("%w: seed is %d bytes, want 32", ErrInvalidKeySize, len(priv.Seed))
+	if len(priv.Seed) != priv.Algorithm.SeedSize() {
+		return nil, fmt.Errorf("%w: key material is %d bytes, want %d", ErrInvalidKeySize, len(priv.Seed), priv.Algorithm.SeedSize())
 	}
 	der, err := asn1.Marshal(oneAsymmetricKey{
 		Version:    0,
@@ -35,9 +36,8 @@ func MarshalPKCS8PrivateKey(priv PrivateKey) ([]byte, error) {
 	return der, nil
 }
 
-// ParsePKCS8PrivateKey decodes a DER OneAsymmetricKey holding an ML-DSA seed.
-// Wrong version, present parameters, wrong seed size and trailing data are
-// hard errors.
+// ParsePKCS8PrivateKey decodes a DER OneAsymmetricKey. Wrong version, present
+// parameters, wrong key material size and trailing data are hard errors.
 func ParsePKCS8PrivateKey(der []byte) (PrivateKey, error) {
 	var k oneAsymmetricKey
 	rest, err := asn1.Unmarshal(der, &k)
@@ -55,10 +55,10 @@ func ParsePKCS8PrivateKey(der []byte) (PrivateKey, error) {
 		return PrivateKey{}, err
 	}
 	if len(k.Algorithm.Parameters.FullBytes) != 0 {
-		return PrivateKey{}, fmt.Errorf("%w: ML-DSA AlgorithmIdentifier must omit parameters", ErrMalformedDER)
+		return PrivateKey{}, fmt.Errorf("%w: AlgorithmIdentifier must omit parameters", ErrMalformedDER)
 	}
-	if len(k.PrivateKey) != 32 {
-		return PrivateKey{}, fmt.Errorf("%w: seed is %d bytes, want 32", ErrInvalidKeySize, len(k.PrivateKey))
+	if len(k.PrivateKey) != alg.SeedSize() {
+		return PrivateKey{}, fmt.Errorf("%w: key material is %d bytes, want %d", ErrInvalidKeySize, len(k.PrivateKey), alg.SeedSize())
 	}
 	return PrivateKey{Algorithm: alg, Seed: bytes.Clone(k.PrivateKey)}, nil
 }

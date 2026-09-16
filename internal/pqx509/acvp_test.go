@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/cloudflare/circl/sign/mldsa/mldsa44"
 	"github.com/cloudflare/circl/sign/mldsa/mldsa65"
 	"github.com/cloudflare/circl/sign/mldsa/mldsa87"
+	"github.com/cloudflare/circl/sign/slhdsa"
 )
 
 // The ACVP sigVer prompt/expectedResults pair: each test case gives a public
@@ -162,11 +164,12 @@ func TestACVPMLDSASigVer(t *testing.T) {
 	t.Logf("checked %d ACVP signature verification cases (%d positive + %d negative)", checked, positive, negative)
 }
 
-// pubFromSK decodes an FIPS-204 encoded ML-DSA secret key via CIRCL and
-// returns the matching encoded public key. Used only by the sigGen test to
-// recover pk from the (sk, message, signature) triples that NIST publishes
-// in mldsa-siggen-expected.json — pqtrust's production API only stores the
-// 32-byte seed, so deriving pk from the encoded sk is a test-only path.
+// pubFromSK decodes an FIPS-204 ML-DSA or FIPS-205/RFC 9909 SLH-DSA encoded
+// secret key via CIRCL and returns the matching encoded public key. Used only
+// by the sigGen tests to recover pk from the (sk, message, signature) triples
+// that NIST publishes in the siggen-expected.json files — pqtrust's
+// production API only stores the 32-byte ML-DSA seed, so deriving pk from the
+// encoded sk is a test-only path.
 func pubFromSK(t *testing.T, alg Algorithm, skBytes []byte) []byte {
 	t.Helper()
 	switch alg {
@@ -198,8 +201,28 @@ func pubFromSK(t *testing.T, alg Algorithm, skBytes []byte) []byte {
 		(*mldsa87.PublicKey)(sk.Public().(*mldsa87.PublicKey)).Pack(&pkBuf)
 		return pkBuf[:]
 	default:
-		t.Fatalf("unknown algorithm %v", alg)
-		return nil
+		// SLH-DSA: sk is the RFC 9909 4n-byte private key; circl needs the
+		// parameter-set ID set on the struct before UnmarshalBinary.
+		if !strings.HasPrefix(alg.String(), "SLH-DSA-") {
+			t.Fatalf("unknown algorithm %v", alg)
+			return nil
+		}
+		if len(skBytes) != alg.SeedSize() {
+			t.Fatalf("%s sk is %d bytes, want %d", alg, len(skBytes), alg.SeedSize())
+		}
+		id, err := slhdsa.IDByName(alg.String())
+		if err != nil {
+			t.Fatalf("circl does not know %v: %v", alg, err)
+		}
+		sk := slhdsa.PrivateKey{ID: id}
+		if err := sk.UnmarshalBinary(skBytes); err != nil {
+			t.Fatalf("%s sk unmarshal: %v", alg, err)
+		}
+		pkBytes, err := sk.PublicKey().MarshalBinary()
+		if err != nil {
+			t.Fatalf("%s pk marshal: %v", alg, err)
+		}
+		return pkBytes
 	}
 }
 
@@ -312,4 +335,151 @@ func TestACVPSelfConsistencySignThenVerify(t *testing.T) {
 			t.Errorf("%v: %v", alg, err)
 		}
 	}
+}
+
+func slhdsaByParamSet() map[string]Algorithm {
+	return map[string]Algorithm{
+		"SLH-DSA-SHA2-128s": SLHDSA_SHA2_128s,
+		"SLH-DSA-SHA2-128f": SLHDSA_SHA2_128f,
+		"SLH-DSA-SHA2-192s": SLHDSA_SHA2_192s,
+		"SLH-DSA-SHA2-192f": SLHDSA_SHA2_192f,
+		"SLH-DSA-SHA2-256s": SLHDSA_SHA2_256s,
+		"SLH-DSA-SHA2-256f": SLHDSA_SHA2_256f,
+		"SLH-DSA-SHAKE-128s": SLHDSA_SHAKE_128s,
+		"SLH-DSA-SHAKE-128f": SLHDSA_SHAKE_128f,
+		"SLH-DSA-SHAKE-192s": SLHDSA_SHAKE_192s,
+		"SLH-DSA-SHAKE-192f": SLHDSA_SHAKE_192f,
+		"SLH-DSA-SHAKE-256s": SLHDSA_SHAKE_256s,
+		"SLH-DSA-SHAKE-256f": SLHDSA_SHAKE_256f,
+	}
+}
+
+func TestACVPSLHDSASigVer(t *testing.T) {
+	var prompt acvpSigVerPrompt
+	var expected acvpSigVerExpected
+	loadJSON(t, "slhdsa-sigver-prompt.json", &prompt)
+	loadJSON(t, "slhdsa-sigver-expected.json", &expected)
+
+	verdict := map[[2]int]bool{}
+	for _, g := range expected.TestGroups {
+		for _, tc := range g.Tests {
+			verdict[[2]int{g.TgID, tc.TcID}] = tc.TestPassed
+		}
+	}
+
+	algByParamSet := slhdsaByParamSet()
+
+	checked, positive, negative := 0, 0, 0
+	for _, g := range prompt.TestGroups {
+		alg, ok := algByParamSet[g.ParameterSet]
+		if !ok {
+			continue
+		}
+		// pqtrust only ever uses pure, external-interface signing with an
+		// empty context; internal-interface groups carry pre-transformed
+		// messages and preHash groups exercise HashSLH-DSA.
+		if g.SignatureInterface != "" && g.SignatureInterface != "external" {
+			continue
+		}
+		if g.PreHash != "" && g.PreHash != "pure" {
+			continue
+		}
+		for _, tc := range g.Tests {
+			want, haveVerdict := verdict[[2]int{g.TgID, tc.TcID}]
+			if !haveVerdict || tc.Context != "" {
+				continue
+			}
+			pkHex := tc.PublicKey
+			if pkHex == "" {
+				pkHex = g.PublicKey
+			}
+			pkBytes, err := hex.DecodeString(pkHex)
+			if err != nil || len(pkBytes) != alg.PublicKeySize() {
+				continue
+			}
+			msg, err := hex.DecodeString(tc.Message)
+			if err != nil {
+				continue
+			}
+			sig, err := hex.DecodeString(tc.Signature)
+			if err != nil {
+				continue
+			}
+			got := Verify(PublicKey{Algorithm: alg, Bytes: pkBytes}, msg, sig) == nil
+			if got != want {
+				t.Errorf("tgId %d tcId %d (%s): Verify = %v, want %v", g.TgID, tc.TcID, g.ParameterSet, got, want)
+			}
+			checked++
+			if want {
+				positive++
+			} else {
+				negative++
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no ACVP SLH-DSA sigVer cases were exercised; the JSON field mapping is wrong")
+	}
+	t.Logf("checked %d ACVP SLH-DSA signature verification cases (%d positive + %d negative)", checked, positive, negative)
+}
+
+func TestACVPSLHDSASigGen(t *testing.T) {
+	var prompt acvpSigGenPrompt
+	var expected acvpSigGenExpected
+	loadJSON(t, "slhdsa-siggen-prompt.json", &prompt)
+	loadJSON(t, "slhdsa-siggen-expected.json", &expected)
+
+	sigByCase := map[[2]int]string{}
+	for _, g := range expected.TestGroups {
+		for _, tc := range g.Tests {
+			sigByCase[[2]int{g.TgID, tc.TcID}] = tc.Signature
+		}
+	}
+
+	algByParamSet := slhdsaByParamSet()
+
+	perSet := map[string]int{}
+	total := 0
+	for _, g := range prompt.TestGroups {
+		alg, ok := algByParamSet[g.ParameterSet]
+		if !ok {
+			continue
+		}
+		if g.SignatureInterface != "" && g.SignatureInterface != "external" {
+			continue
+		}
+		if g.PreHash != "" && g.PreHash != "pure" {
+			continue
+		}
+		for _, tc := range g.Tests {
+			sigHex, haveSig := sigByCase[[2]int{g.TgID, tc.TcID}]
+			if !haveSig || tc.Context != "" {
+				continue
+			}
+			skBytes, err := hex.DecodeString(tc.SK)
+			if err != nil || len(skBytes) != alg.SeedSize() {
+				continue
+			}
+			msg, err := hex.DecodeString(tc.Message)
+			if err != nil {
+				continue
+			}
+			sigBytes, err := hex.DecodeString(sigHex)
+			if err != nil || len(sigBytes) != alg.SignatureSize() {
+				continue
+			}
+			pkBytes := pubFromSK(t, alg, skBytes)
+			if err := Verify(PublicKey{Algorithm: alg, Bytes: pkBytes}, msg, sigBytes); err != nil {
+				t.Errorf("tgId %d tcId %d (%s): Verify rejected NIST-generated signature: %v",
+					g.TgID, tc.TcID, g.ParameterSet, err)
+				continue
+			}
+			perSet[g.ParameterSet]++
+			total++
+		}
+	}
+	if total == 0 {
+		t.Fatal("no ACVP SLH-DSA sigGen cases were exercised; the JSON field mapping is wrong")
+	}
+	t.Logf("checked %d positive ACVP SLH-DSA signature generation cases across %d parameter sets", total, len(perSet))
 }

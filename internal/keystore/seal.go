@@ -54,7 +54,8 @@ func aad(alg string) []byte {
 	return []byte(fmt.Sprintf("pqtrust-sealed-key-v%d|%s", envelopeVersion, alg))
 }
 
-// Seal encrypts priv's seed under a key derived from passphrase.
+// Seal encrypts priv's key material (ML-DSA seed or SLH-DSA private key) under
+// a key derived from passphrase.
 func Seal(priv pqx509.PrivateKey, passphrase []byte) ([]byte, error) {
 	if len(passphrase) == 0 {
 		return nil, ErrEmptyPassphrase
@@ -62,8 +63,8 @@ func Seal(priv pqx509.PrivateKey, passphrase []byte) ([]byte, error) {
 	if !priv.Algorithm.Valid() {
 		return nil, fmt.Errorf("keystore: %w: %v", pqx509.ErrUnknownAlgorithm, priv.Algorithm)
 	}
-	if len(priv.Seed) != 32 {
-		return nil, fmt.Errorf("keystore: %w: seed is %d bytes, want 32", pqx509.ErrInvalidKeySize, len(priv.Seed))
+	if len(priv.Seed) != priv.Algorithm.SeedSize() {
+		return nil, fmt.Errorf("keystore: %w: key material is %d bytes, want %d", pqx509.ErrInvalidKeySize, len(priv.Seed), priv.Algorithm.SeedSize())
 	}
 
 	salt := make([]byte, saltSize)
@@ -138,9 +139,9 @@ func Unseal(sealed, passphrase []byte) (pqx509.PrivateKey, error) {
 	if err != nil {
 		return pqx509.PrivateKey{}, ErrWrongPassphrase
 	}
-	if len(seed) != 32 {
+	if len(seed) != alg.SeedSize() {
 		zero(seed)
-		return pqx509.PrivateKey{}, fmt.Errorf("keystore: %w: sealed seed is %d bytes", pqx509.ErrInvalidKeySize, len(seed))
+		return pqx509.PrivateKey{}, fmt.Errorf("keystore: %w: sealed key material is %d bytes, want %d", pqx509.ErrInvalidKeySize, len(seed), alg.SeedSize())
 	}
 	return pqx509.PrivateKey{Algorithm: alg, Seed: seed}, nil
 }

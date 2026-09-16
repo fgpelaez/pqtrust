@@ -352,3 +352,64 @@ func TestParseRevocationListRejectsDuplicateExtensions(t *testing.T) {
 		t.Errorf("err = %v, want one wrapping ErrMalformedDER", err)
 	}
 }
+
+func TestSLHDSACRL(t *testing.T) {
+	pub, priv, err := GenerateKey(rand.Reader, SLHDSA_SHA2_192s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer, err := priv.Signer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	serial, _ := GenerateSerialNumber(rand.Reader)
+	issuer := &Certificate{
+		SerialNumber:          serial,
+		SignatureAlgorithm:    SLHDSA_SHA2_192s,
+		Subject:               Name{CommonName: "SLH CRL Issuer"},
+		NotBefore:             time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+		NotAfter:              time.Date(2031, 1, 1, 0, 0, 0, 0, time.UTC),
+		BasicConstraints:      BasicConstraints{IsCA: true, MaxPathLen: 0, MaxPathLenSet: true},
+		BasicConstraintsValid: true,
+		KeyUsage:              KeyUsageKeyCertSign | KeyUsageCRLSign,
+	}
+	issuerDER, err := CreateCertificate(rand.Reader, issuer, issuer, pub, signer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	issuer, err = ParseCertificate(issuerDER)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	revoked, _ := GenerateSerialNumber(rand.Reader)
+	der, err := CreateRevocationList(rand.Reader, issuer, signer, big.NewInt(1),
+		[]RevocationEntry{{SerialNumber: revoked,
+			RevocationTime: time.Date(2026, 9, 15, 0, 0, 0, 0, time.UTC),
+			ReasonCode:     1}},
+		time.Date(2026, 9, 15, 0, 0, 0, 0, time.UTC),
+		time.Date(2026, 9, 29, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	crl, err := ParseRevocationList(der)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(crl.Entries) != 1 {
+		t.Fatalf("CRL entries = %d, want 1", len(crl.Entries))
+	}
+	entry, found := crl.IsRevoked(revoked)
+	if !found {
+		t.Fatal("the revoked serial must appear on the CRL")
+	}
+	if entry.ReasonCode != 1 {
+		t.Errorf("reason = %d, want 1", entry.ReasonCode)
+	}
+	if crl.SignatureAlgorithm != SLHDSA_SHA2_192s {
+		t.Errorf("CRL signature algorithm = %v", crl.SignatureAlgorithm)
+	}
+	if err := crl.VerifySignatureFrom(issuer); err != nil {
+		t.Errorf("CRL must verify under the SLH-DSA issuer: %v", err)
+	}
+}

@@ -2,24 +2,20 @@ package pqx509
 
 import (
 	"bytes"
-	"crypto"
 	"crypto/sha256"
 	"encoding/asn1"
 	"fmt"
 	"io"
-
-	"github.com/cloudflare/circl/sign/mldsa/mldsa44"
-	"github.com/cloudflare/circl/sign/mldsa/mldsa65"
-	"github.com/cloudflare/circl/sign/mldsa/mldsa87"
 )
 
-// PublicKey is an algorithm-tagged ML-DSA public key in its FIPS 204 encoding.
+// PublicKey is an algorithm-tagged post-quantum public key in its encoded form.
 type PublicKey struct {
 	Algorithm Algorithm
 	Bytes     []byte
 }
 
-// PrivateKey is an algorithm-tagged ML-DSA private key, held as its 32-byte seed.
+// PrivateKey is an algorithm-tagged post-quantum private key, held as the
+// family's canonical encoding: a 32-byte ML-DSA seed or a 4n-byte SLH-DSA key.
 type PrivateKey struct {
 	Algorithm Algorithm
 	Seed      []byte
@@ -38,16 +34,7 @@ func GenerateKey(rand io.Reader, alg Algorithm) (PublicKey, PrivateKey, error) {
 	if !alg.Valid() {
 		return PublicKey{}, PrivateKey{}, fmt.Errorf("%w: %v", ErrUnknownAlgorithm, alg)
 	}
-	var seed [32]byte
-	if _, err := io.ReadFull(rand, seed[:]); err != nil {
-		return PublicKey{}, PrivateKey{}, fmt.Errorf("pqx509: reading seed: %w", err)
-	}
-	priv := PrivateKey{Algorithm: alg, Seed: seed[:]}
-	signer, err := priv.Signer()
-	if err != nil {
-		return PublicKey{}, PrivateKey{}, err
-	}
-	return signer.Public(), priv, nil
+	return algorithms[alg].family.generateKey(rand, alg)
 }
 
 type circlSigner struct {
@@ -62,68 +49,21 @@ func (s *circlSigner) Sign(_ io.Reader, msg []byte) ([]byte, error) {
 	return s.sign(msg)
 }
 
-// Signer expands the seed and returns a Signer. The returned Signer signs in
-// pure mode with an empty ML-DSA context string, as X.509 requires.
+// Signer expands the key material and returns a Signer. The returned Signer
+// signs in pure mode with an empty context string, as X.509 requires.
 func (k PrivateKey) Signer() (Signer, error) {
-	if len(k.Seed) != 32 {
-		return nil, fmt.Errorf("%w: seed is %d bytes, want 32", ErrInvalidKeySize, len(k.Seed))
-	}
-	var seed [32]byte
-	copy(seed[:], k.Seed)
-
-	switch k.Algorithm {
-	case MLDSA44:
-		pub, sk := mldsa44.NewKeyFromSeed(&seed)
-		return &circlSigner{alg: k.Algorithm, pub: PublicKey{k.Algorithm, pub.Bytes()}, sign: func(msg []byte) ([]byte, error) {
-			return sk.Sign(nil, msg, crypto.Hash(0))
-		}}, nil
-	case MLDSA65:
-		pub, sk := mldsa65.NewKeyFromSeed(&seed)
-		return &circlSigner{alg: k.Algorithm, pub: PublicKey{k.Algorithm, pub.Bytes()}, sign: func(msg []byte) ([]byte, error) {
-			return sk.Sign(nil, msg, crypto.Hash(0))
-		}}, nil
-	case MLDSA87:
-		pub, sk := mldsa87.NewKeyFromSeed(&seed)
-		return &circlSigner{alg: k.Algorithm, pub: PublicKey{k.Algorithm, pub.Bytes()}, sign: func(msg []byte) ([]byte, error) {
-			return sk.Sign(nil, msg, crypto.Hash(0))
-		}}, nil
-	default:
+	if !k.Algorithm.Valid() {
 		return nil, fmt.Errorf("%w: %v", ErrUnknownAlgorithm, k.Algorithm)
 	}
+	return algorithms[k.Algorithm].family.signer(k.Seed, k.Algorithm)
 }
 
-// Verify checks a pure-mode ML-DSA signature with an empty context string.
+// Verify checks a pure-mode signature with an empty context string.
 func Verify(pub PublicKey, msg, sig []byte) error {
-	if len(pub.Bytes) != pub.Algorithm.PublicKeySize() {
-		return fmt.Errorf("%w: public key is %d bytes, want %d", ErrInvalidKeySize, len(pub.Bytes), pub.Algorithm.PublicKeySize())
-	}
-	var ok bool
-	switch pub.Algorithm {
-	case MLDSA44:
-		var k mldsa44.PublicKey
-		if err := k.UnmarshalBinary(pub.Bytes); err != nil {
-			return fmt.Errorf("%w: %w", ErrInvalidKeySize, err)
-		}
-		ok = mldsa44.Verify(&k, msg, nil, sig)
-	case MLDSA65:
-		var k mldsa65.PublicKey
-		if err := k.UnmarshalBinary(pub.Bytes); err != nil {
-			return fmt.Errorf("%w: %w", ErrInvalidKeySize, err)
-		}
-		ok = mldsa65.Verify(&k, msg, nil, sig)
-	case MLDSA87:
-		var k mldsa87.PublicKey
-		if err := k.UnmarshalBinary(pub.Bytes); err != nil {
-			return fmt.Errorf("%w: %w", ErrInvalidKeySize, err)
-		}
-		ok = mldsa87.Verify(&k, msg, nil, sig)
-	default:
+	if !pub.Algorithm.Valid() {
 		return fmt.Errorf("%w: %v", ErrUnknownAlgorithm, pub.Algorithm)
 	}
-	if !ok {
-		return ErrBadSignature
-	}
-	return nil
+	return algorithms[pub.Algorithm].family.verify(pub, msg, sig)
 }
 
 // MarshalPKIXPublicKey encodes pub as a DER SubjectPublicKeyInfo, with the raw
@@ -164,7 +104,7 @@ func publicKeyFromSPKI(spki subjectPublicKeyInfo) (PublicKey, error) {
 		return PublicKey{}, err
 	}
 	if len(spki.Algorithm.Parameters.FullBytes) != 0 {
-		return PublicKey{}, fmt.Errorf("%w: ML-DSA AlgorithmIdentifier must omit parameters", ErrMalformedDER)
+		return PublicKey{}, fmt.Errorf("%w: AlgorithmIdentifier must omit parameters", ErrMalformedDER)
 	}
 	if spki.PublicKey.BitLength%8 != 0 {
 		return PublicKey{}, fmt.Errorf("%w: SPKI BIT STRING has unused bits", ErrMalformedDER)

@@ -1,11 +1,12 @@
 # LIMITATIONS
 
 pqtrust is honest about what it does and does not do. The code on `main` is
-Phase 1 plus the first Phase 2 slice (PKCS#10 CSR enrollment, PKCS#8 export,
-DN completeness). This file lists
-the things a reader needs to know before depending on the daemon for anything
-beyond a five-minute demo. Every entry has a one-line "what a production
-deployment needs" note where relevant.
+Phase 1 plus two Phase 2 slices: PKCS#10 CSR enrollment, PKCS#8 export and
+DN completeness; and SLH-DSA (FIPS 205) — all twelve parameter sets, issued
+and verified alongside ML-DSA. This file lists the things a reader needs to
+know before depending on the daemon for anything beyond a five-minute demo.
+Every entry has a one-line "what a production deployment needs" note where
+relevant.
 
 ## Cryptography and transport
 
@@ -15,9 +16,20 @@ deployment needs" note where relevant.
   harvest-now-decrypt-later; the listener cert is regenerated on every
   startup. Revisited in Phase 2.
 - **Private keys are exported as PKCS#8** (`-----BEGIN PRIVATE KEY-----`)
-  carrying the raw 32-byte ML-DSA seed per
-  `draft-ietf-lamps-dilithium-certificates`. The Phase 1 pqtrust-specific PEM
-  remains readable but is no longer written.
+  carrying the raw 32-byte ML-DSA seed per RFC 9881, or the 4n-byte SLH-DSA
+  private key per RFC 9909 (64/96/128 bytes). The Phase 1 pqtrust-specific
+  PEM remains readable but is no longer written.
+- **SLH-DSA `192f`/`256f` (35/50 KB signatures) are parsed and verified but
+  never issued**: CA levels allow only `s` sets and end-entity only 128s/f —
+  root the 256s sets, intermediates the 192s sets. pqtrust understands all
+  twelve FIPS 205 parameter sets on parse and verify.
+- **SLH-DSA `s`-set signing costs ~0.1–1 s per signature** (milliseconds for
+  ML-DSA), and signatures are 8–50 KB — an SLH-DSA hierarchy is a conscious
+  choice, not a default. What a production deployment needs: keep ML-DSA
+  where issuance latency matters; SLH-DSA buys hash-based security margins.
+- **An SLH-DSA private key must not sign more than 2^64 messages** per key
+  (RFC 9909 §8). A non-issue at pqtrust volumes, but a hard operational
+  bound when a CA key is reused across many certificates and CRLs.
 - **Stored end-entity keys** (`store_key: true`) are sealed with the same
   passphrase used to unlock the issuing CA. Separate per-key passphrases are
   a separate bounded task (explicitly out of the Phase 2 CSR scope).
@@ -78,7 +90,7 @@ and nothing in the open codebase forecloses the commercial path. The
 
 | Open (AGPL) | Future commercial tier |
 |---|---|
-| `pqx509` (ML-DSA), CA engine, REST API, CLI, CRL | HA / clustering |
+| `pqx509` (ML-DSA, SLH-DSA), CA engine, REST API, CLI, CRL | HA / clustering |
 | Hybrid PQ TLS, server-side keygen | HSM / KMS backends |
 | SQLite-backed single-node deployment | Web dashboard |
 | Bearer-token auth, sealed file keystore | RA / approval workflows |

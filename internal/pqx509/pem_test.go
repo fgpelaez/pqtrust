@@ -167,3 +167,51 @@ func TestPrivateKeyPEM(t *testing.T) {
 			pemTypePrivateKey, pemTypeLegacyKey, msg)
 	}
 }
+
+func TestPrivateKeyPEMSLHDSA(t *testing.T) {
+	pub, priv, err := GenerateKey(rand.Reader, SLHDSA_SHA2_128s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = pub
+	pemBytes, err := EncodePrivateKeyPEM(priv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	block, _ := pem.Decode(pemBytes)
+	if block == nil || block.Type != "PRIVATE KEY" {
+		t.Fatalf("PEM type = %q, want PRIVATE KEY", block.Type)
+	}
+	back, err := DecodePrivateKeyPEM(pemBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if back.Algorithm != SLHDSA_SHA2_128s || !bytes.Equal(back.Seed, priv.Seed) {
+		t.Error("PEM round-trip mismatch")
+	}
+
+	// Legacy block: name header + raw key material, now accepted for any
+	// known algorithm with the right length.
+	legacy := pem.EncodeToMemory(&pem.Block{
+		Type:    "PQTRUST ML-DSA PRIVATE KEY",
+		Headers: map[string]string{"Algorithm": "SLH-DSA-SHA2-128s"},
+		Bytes:   priv.Seed,
+	})
+	fromLegacy, err := DecodePrivateKeyPEM(legacy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fromLegacy.Algorithm != SLHDSA_SHA2_128s || !bytes.Equal(fromLegacy.Seed, priv.Seed) {
+		t.Error("legacy PEM round-trip mismatch")
+	}
+
+	// Legacy block with ML-DSA-length body under an SLH-DSA name: rejected.
+	badLegacy := pem.EncodeToMemory(&pem.Block{
+		Type:    "PQTRUST ML-DSA PRIVATE KEY",
+		Headers: map[string]string{"Algorithm": "SLH-DSA-SHA2-128s"},
+		Bytes:   make([]byte, 32),
+	})
+	if _, err := DecodePrivateKeyPEM(badLegacy); !errors.Is(err, ErrInvalidKeySize) {
+		t.Errorf("want ErrInvalidKeySize, got %v", err)
+	}
+}

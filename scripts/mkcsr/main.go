@@ -1,6 +1,6 @@
-// Command mkcsr generates an ML-DSA-44 key pair and a PKCS#10 CSR for the
-// interop script: writes pqtrust-csr.pem (CERTIFICATE REQUEST) and
-// pqtrust-key.pem (PKCS#8 PRIVATE KEY) into -dir.
+// Command mkcsr generates a key pair and a PKCS#10 CSR for the interop
+// script: writes pqtrust-csr.pem (CERTIFICATE REQUEST) and pqtrust-key.pem
+// (PKCS#8 PRIVATE KEY) into -dir.
 package main
 
 import (
@@ -16,9 +16,14 @@ import (
 
 func main() {
 	dir := flag.String("dir", ".", "output directory")
+	algName := flag.String("alg", "ML-DSA-44", "signature algorithm name")
 	flag.Parse()
 
-	pub, priv, err := pqx509.GenerateKey(rand.Reader, pqx509.MLDSA44)
+	alg, err := pqx509.ParseAlgorithm(*algName)
+	if err != nil {
+		fail(err)
+	}
+	pub, priv, err := pqx509.GenerateKey(rand.Reader, alg)
 	if err != nil {
 		fail(err)
 	}

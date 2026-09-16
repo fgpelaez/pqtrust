@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Downloads the NIST ACVP ML-DSA sigVer vectors used by internal/pqx509/acvp_test.go.
+# Downloads the NIST ACVP ML-DSA and SLH-DSA sigVer/sigGen vectors used by
+# internal/pqx509/acvp_test.go.
 set -euo pipefail
 
 dest="testdata/acvp"
@@ -17,5 +18,10 @@ fetch "ML-DSA-sigVer-FIPS204" "prompt.json" "mldsa-sigver-prompt.json"
 fetch "ML-DSA-sigVer-FIPS204" "expectedResults.json" "mldsa-sigver-expected.json"
 fetch "ML-DSA-sigGen-FIPS204" "prompt.json" "mldsa-siggen-prompt.json"
 fetch "ML-DSA-sigGen-FIPS204" "expectedResults.json" "mldsa-siggen-expected.json"
+
+fetch "SLH-DSA-sigVer-FIPS205" "prompt.json" "slhdsa-sigver-prompt.json"
+fetch "SLH-DSA-sigVer-FIPS205" "expectedResults.json" "slhdsa-sigver-expected.json"
+fetch "SLH-DSA-sigGen-FIPS205" "prompt.json" "slhdsa-siggen-prompt.json"
+fetch "SLH-DSA-sigGen-FIPS205" "expectedResults.json" "slhdsa-siggen-expected.json"
 
 echo "done; vectors in ${dest}"

@@ -110,3 +110,53 @@ func TestCRLUnknownCA(t *testing.T) {
 		t.Errorf("want ErrNotFound, got %v", err)
 	}
 }
+
+func TestCRLFromSLHDSACA(t *testing.T) {
+	e := newEngine(t)
+	ctx := context.Background()
+
+	root, err := e.CreateCA(ctx, CreateCARequest{Name: "R", Algorithm: pqx509.SLHDSA_SHA2_256s,
+		Subject: pqx509.Name{CommonName: "R"}, Passphrase: pass})
+	if err != nil {
+		t.Fatal(err)
+	}
+	inter, err := e.CreateCA(ctx, CreateCARequest{Name: "I", ParentID: root.ID, Algorithm: pqx509.SLHDSA_SHA2_192s,
+		Subject: pqx509.Name{CommonName: "I"}, Passphrase: pass, ParentPassphrase: pass})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := e.IssueCertificate(ctx, IssueRequest{CAID: inter.ID, CAPassphrase: pass,
+		Algorithm: pqx509.SLHDSA_SHA2_128s, Subject: pqx509.Name{CommonName: "slh-crl.example.com"},
+		SANs: pqx509.SANs{DNSNames: []string{"slh-crl.example.com"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Revoke(ctx, res.Serial, 1); err != nil {
+		t.Fatal(err)
+	}
+
+	der, err := e.CRL(ctx, inter.ID, pass)
+	if err != nil {
+		t.Fatal(err)
+	}
+	crl, err := pqx509.ParseRevocationList(der)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if crl.SignatureAlgorithm != pqx509.SLHDSA_SHA2_192s {
+		t.Errorf("CRL signature algorithm = %v, want the intermediate's SLH-DSA-SHA2-192s", crl.SignatureAlgorithm)
+	}
+	serial, ok := new(big.Int).SetString(res.Serial, 16)
+	if !ok {
+		t.Fatalf("serial %q is not hex", res.Serial)
+	}
+	if entry, found := crl.IsRevoked(serial); !found {
+		t.Fatal("the revoked serial must appear on the SLH-DSA CRL")
+	} else if entry.ReasonCode != 1 {
+		t.Errorf("reason = %d, want 1", entry.ReasonCode)
+	}
+	if err := crl.VerifySignatureFrom(inter.Certificate); err != nil {
+		t.Errorf("CRL must verify under the SLH-DSA intermediate: %v", err)
+	}
+}
