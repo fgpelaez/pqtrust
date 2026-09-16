@@ -486,3 +486,128 @@ func TestIssueFromCSRConstraints(t *testing.T) {
 		t.Errorf("tampered CSR: want ErrCSRSignature, got %v", err)
 	}
 }
+
+func TestCreateCAAlgorithmAllowList(t *testing.T) {
+	e := newEngine(t)
+	ctx := context.Background()
+	pass := []byte("pass")
+
+	cases := []struct {
+		name    string
+		parent  string // "" = root
+		alg     pqx509.Algorithm
+		wantErr bool
+	}{
+		{"root ML-DSA-87 ok", "", pqx509.MLDSA87, false},
+		{"root SLH-DSA-SHA2-256s ok", "", pqx509.SLHDSA_SHA2_256s, false},
+		{"root SLH-DSA-SHAKE-256s ok", "", pqx509.SLHDSA_SHAKE_256s, false},
+		{"root SLH-DSA-SHA2-256f rejected", "", pqx509.SLHDSA_SHA2_256f, true},
+		{"root ML-DSA-44 still rejected", "", pqx509.MLDSA44, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := CreateCARequest{Name: "X", Algorithm: tc.alg,
+				Subject: pqx509.Name{CommonName: "X"}, Passphrase: pass}
+			_, err := e.CreateCA(ctx, req)
+			if tc.wantErr && !errors.Is(err, ErrConstraintViolation) {
+				t.Errorf("want ErrConstraintViolation, got %v", err)
+			}
+			if !tc.wantErr && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+
+	// Intermediate level against an SLH-DSA root.
+	root, err := e.CreateCA(ctx, CreateCARequest{Name: "R", Algorithm: pqx509.SLHDSA_SHA2_256s,
+		Subject: pqx509.Name{CommonName: "R"}, Passphrase: pass})
+	if err != nil {
+		t.Fatal(err)
+	}
+	interCases := []struct {
+		name    string
+		alg     pqx509.Algorithm
+		wantErr bool
+	}{
+		{"intermediate SLH-DSA-SHA2-192s ok", pqx509.SLHDSA_SHA2_192s, false},
+		{"intermediate SLH-DSA-SHAKE-192s ok", pqx509.SLHDSA_SHAKE_192s, false},
+		{"intermediate SLH-DSA-SHA2-128s rejected", pqx509.SLHDSA_SHA2_128s, true},
+		{"intermediate SLH-DSA-SHA2-192f rejected", pqx509.SLHDSA_SHA2_192f, true},
+		{"intermediate ML-DSA-65 ok", pqx509.MLDSA65, false},
+	}
+	for _, tc := range interCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := e.CreateCA(ctx, CreateCARequest{Name: "I", ParentID: root.ID, Algorithm: tc.alg,
+				Subject: pqx509.Name{CommonName: "I"}, Passphrase: pass, ParentPassphrase: pass})
+			if tc.wantErr && !errors.Is(err, ErrConstraintViolation) {
+				t.Errorf("want ErrConstraintViolation, got %v", err)
+			}
+			if !tc.wantErr && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestSLHDSAHierarchyEndEntityAndCSR(t *testing.T) {
+	e := newEngine(t)
+	ctx := context.Background()
+	pass := []byte("pass")
+
+	root, err := e.CreateCA(ctx, CreateCARequest{Name: "R", Algorithm: pqx509.SLHDSA_SHA2_256s,
+		Subject: pqx509.Name{CommonName: "R"}, Passphrase: pass})
+	if err != nil {
+		t.Fatal(err)
+	}
+	inter, err := e.CreateCA(ctx, CreateCARequest{Name: "I", ParentID: root.ID, Algorithm: pqx509.SLHDSA_SHA2_192s,
+		Subject: pqx509.Name{CommonName: "I"}, Passphrase: pass, ParentPassphrase: pass})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if inter.Certificate.SignatureAlgorithm != pqx509.SLHDSA_SHA2_256s {
+		t.Errorf("intermediate signed with %v, want the root's SLH-DSA-SHA2-256s", inter.Certificate.SignatureAlgorithm)
+	}
+
+	// End-entity: every allowed set issues; 192f is rejected.
+	for _, alg := range []pqx509.Algorithm{
+		pqx509.SLHDSA_SHA2_128s, pqx509.SLHDSA_SHA2_128f,
+		pqx509.SLHDSA_SHAKE_128s, pqx509.SLHDSA_SHAKE_128f,
+	} {
+		res, err := e.IssueCertificate(ctx, IssueRequest{CAID: inter.ID, CAPassphrase: pass,
+			Algorithm: alg, Subject: pqx509.Name{CommonName: alg.String()}})
+		if err != nil {
+			t.Fatalf("%s: issue: %v", alg, err)
+		}
+		if res.Certificate.PublicKey.Algorithm != alg {
+			t.Errorf("%s: issued with %v", alg, res.Certificate.PublicKey.Algorithm)
+		}
+		if res.Certificate.SignatureAlgorithm != pqx509.SLHDSA_SHA2_192s {
+			t.Errorf("%s: signed with %v, want the intermediate's SLH-DSA-SHA2-192s", alg, res.Certificate.SignatureAlgorithm)
+		}
+	}
+	_, err = e.IssueCertificate(ctx, IssueRequest{CAID: inter.ID, CAPassphrase: pass,
+		Algorithm: pqx509.SLHDSA_SHA2_192f, Subject: pqx509.Name{CommonName: "no"}})
+	if !errors.Is(err, ErrConstraintViolation) {
+		t.Errorf("192f end-entity: want ErrConstraintViolation, got %v", err)
+	}
+
+	// CSR path: an allowed SLH-DSA SPKI issues; 192f is a constraint violation.
+	csrOK := makeTestCSR(t, pqx509.Name{CommonName: "slh-csr.example.com"},
+		pqx509.SANs{DNSNames: []string{"slh-csr.example.com"}}, pqx509.SLHDSA_SHA2_128s)
+	res, err := e.IssueCertificate(ctx, IssueRequest{CAID: inter.ID, CAPassphrase: pass, CSR: csrOK})
+	if err != nil {
+		t.Fatalf("SLH-DSA CSR issue: %v", err)
+	}
+	if res.Certificate.PublicKey.Algorithm != pqx509.SLHDSA_SHA2_128s {
+		t.Errorf("CSR-issued algorithm = %v", res.Certificate.PublicKey.Algorithm)
+	}
+	if res.PrivateKeyPEM != "" {
+		t.Error("CSR issuance must not return a private key")
+	}
+	csrBad := makeTestCSR(t, pqx509.Name{CommonName: "no.example.com"},
+		pqx509.SANs{DNSNames: []string{"no.example.com"}}, pqx509.SLHDSA_SHA2_192f)
+	_, err = e.IssueCertificate(ctx, IssueRequest{CAID: inter.ID, CAPassphrase: pass, CSR: csrBad})
+	if !errors.Is(err, ErrConstraintViolation) {
+		t.Errorf("192f CSR: want ErrConstraintViolation, got %v", err)
+	}
+}

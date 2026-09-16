@@ -6,6 +6,7 @@ package ca
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fgpelaez/pqtrust/internal/pqx509"
@@ -33,33 +34,55 @@ const (
 const clockSkew = 5 * time.Minute
 
 type caProfile struct {
-	algorithm   pqx509.Algorithm
-	pathLen     int
-	keyUsage    pqx509.KeyUsage
-	defaultDays int
-	maxDays     int
+	allowedAlgorithms []pqx509.Algorithm
+	pathLen           int
+	keyUsage          pqx509.KeyUsage
+	defaultDays       int
+	maxDays           int
 }
 
 var (
 	rootProfile = caProfile{
-		algorithm:   pqx509.MLDSA87,
-		pathLen:     1,
-		keyUsage:    pqx509.KeyUsageKeyCertSign | pqx509.KeyUsageCRLSign,
-		defaultDays: rootValidityDays,
-		maxDays:     rootValidityDays,
+		allowedAlgorithms: []pqx509.Algorithm{pqx509.MLDSA87, pqx509.SLHDSA_SHA2_256s, pqx509.SLHDSA_SHAKE_256s},
+		pathLen:           1,
+		keyUsage:          pqx509.KeyUsageKeyCertSign | pqx509.KeyUsageCRLSign,
+		defaultDays:       rootValidityDays,
+		maxDays:           rootValidityDays,
 	}
 	intermediateProfile = caProfile{
-		algorithm:   pqx509.MLDSA65,
-		pathLen:     0,
-		keyUsage:    pqx509.KeyUsageKeyCertSign | pqx509.KeyUsageCRLSign,
-		defaultDays: intermediateValidityDays,
-		maxDays:     intermediateValidityDays,
+		allowedAlgorithms: []pqx509.Algorithm{pqx509.MLDSA65, pqx509.SLHDSA_SHA2_192s, pqx509.SLHDSA_SHAKE_192s},
+		pathLen:           0,
+		keyUsage:          pqx509.KeyUsageKeyCertSign | pqx509.KeyUsageCRLSign,
+		defaultDays:       intermediateValidityDays,
+		maxDays:           intermediateValidityDays,
+	}
+	endEntityAlgorithms = []pqx509.Algorithm{
+		pqx509.MLDSA44, pqx509.MLDSA65,
+		pqx509.SLHDSA_SHA2_128s, pqx509.SLHDSA_SHA2_128f,
+		pqx509.SLHDSA_SHAKE_128s, pqx509.SLHDSA_SHAKE_128f,
 	}
 )
 
+func algorithmAllowed(alg pqx509.Algorithm, allowed []pqx509.Algorithm) bool {
+	for _, a := range allowed {
+		if alg == a {
+			return true
+		}
+	}
+	return false
+}
+
+func algorithmList(algs []pqx509.Algorithm) string {
+	names := make([]string, len(algs))
+	for i, a := range algs {
+		names[i] = a.String()
+	}
+	return strings.Join(names, ", ")
+}
+
 func (p caProfile) checkAlgorithm(alg pqx509.Algorithm) error {
-	if alg != p.algorithm {
-		return fmt.Errorf("%w: this CA level requires %v, got %v", ErrConstraintViolation, p.algorithm, alg)
+	if !algorithmAllowed(alg, p.allowedAlgorithms) {
+		return fmt.Errorf("%w: this CA level allows %s, got %v", ErrConstraintViolation, algorithmList(p.allowedAlgorithms), alg)
 	}
 	return nil
 }
@@ -79,12 +102,10 @@ func (p caProfile) resolveDays(requested int) (int, error) {
 }
 
 func checkEndEntityAlgorithm(alg pqx509.Algorithm) error {
-	switch alg {
-	case pqx509.MLDSA44, pqx509.MLDSA65:
-		return nil
-	default:
-		return fmt.Errorf("%w: end-entity certificates support ML-DSA-44 and ML-DSA-65, got %v", ErrConstraintViolation, alg)
+	if !algorithmAllowed(alg, endEntityAlgorithms) {
+		return fmt.Errorf("%w: end-entity certificates allow %s, got %v", ErrConstraintViolation, algorithmList(endEntityAlgorithms), alg)
 	}
+	return nil
 }
 
 func checkExtKeyUsage(ekus []pqx509.ExtKeyUsage) error {
